@@ -1,0 +1,356 @@
+/* ============================================================
+   CODECHRONICLES — Navegación & UI chrome
+   ============================================================ */
+
+/* ---------- Header ---------- */
+.chrome {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter);
+  height: var(--header-h);
+  pointer-events: none;
+  mix-blend-mode: normal;
+}
+
+.chrome__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  pointer-events: auto;
+}
+
+.chrome__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  letter-spacing: 0.04em;
+  color: var(--color-paper);
+  pointer-events: auto;
+  text-decoration: none;
+  transition: color 0.3s var(--ease);
+}
+
+.chrome__brand:hover {
+  color: #ffffff;
+}
+
+.chrome__brand-emblem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  filter: drop-shadow(0 2px 8px rgba(201, 162, 74, 0.35));
+  transition: transform 0.6s var(--ease-out), filter 0.4s;
+}
+
+.chrome__brand:hover .chrome__brand-emblem {
+  transform: rotate(35deg) scale(1.08);
+  filter: drop-shadow(0 0 14px rgba(240, 198, 96, 0.7));
+}
+
+.chrome__brand-text {
+  font-weight: 500;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+}
+
+/* ---------- Chrono-HUD: Indicador de Máquina del Tiempo ---------- */
+.chrono-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.35rem 0.85rem;
+  background: rgba(10, 14, 18, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(223, 231, 224, 0.16);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--color-paper-dim);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chrono-hud:hover {
+  border-color: var(--ch-accent, rgba(201, 162, 74, 0.6));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 14px rgba(201, 162, 74, 0.25);
+}
+
+.chrono-hud__pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ch-accent, #c9a24a);
+  box-shadow: 0 0 8px var(--ch-accent, #c9a24a);
+  animation: chrono-pulse 2s infinite ease-in-out;
+}
+
+@keyframes chrono-pulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+}
+
+.chrono-hud__tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-paper-faint);
+  letter-spacing: 0.16em;
+}
+
+.chrono-hud__year {
+  color: var(--ch-accent, var(--color-paper));
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid rgba(223, 231, 224, 0.18);
+  padding-left: var(--space-3);
+}
+
+@media (max-width: 640px) {
+  .chrono-hud__tag {
+    display: none;
+  }
+  .chrono-hud__year {
+    border-left: none;
+    padding-left: 0;
+  }
+}
+
+.chrome__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  pointer-events: auto;
+}
+
+.chrome__sound {
+  pointer-events: auto;
+}
+
+.icon-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-paper-dim);
+  transition: var(--transition-token);
+}
+
+.icon-btn:hover {
+  color: var(--color-paper);
+  border-color: var(--color-paper-faint);
+}
+
+.icon-btn.is-on {
+  color: var(--color-paper);
+  border-color: var(--ch-accent, var(--color-paper));
+  background: var(--ch-accent, transparent);
+}
+
+/* ---------- Chapter rail lateral ---------- */
+.rail {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-3);
+  pointer-events: none;
+}
+
+.rail__item {
+  width: 2rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  pointer-events: auto;
+  color: var(--color-paper-faint);
+  transition: var(--transition-token);
+}
+
+.rail__index {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.rail__track {
+  position: relative;
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-line-strong);
+  overflow: visible;
+}
+
+.rail__dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-paper-faint);
+  transition: var(--transition-token);
+}
+
+.rail__item:hover {
+  color: var(--color-paper);
+}
+
+.rail__item.is-active {
+  color: var(--color-paper);
+}
+
+.rail__item.is-active .rail__dot {
+  background: var(--ch-accent, var(--color-paper));
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+  width: 7px;
+  height: 7px;
+}
+
+.rail__item.is-active .rail__track {
+  background: var(--ch-accent, var(--color-paper));
+}
+
+/* ---------- Barra de progreso de scroll ---------- */
+.progress {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  z-index: 21;
+  background: transparent;
+  pointer-events: none;
+}
+
+.progress__bar {
+  height: 100%;
+  width: 0%;
+  background: var(--ch-accent, var(--color-paper));
+  transform-origin: left;
+  transition: width 90ms linear;
+}
+
+/* ---------- Timestamp flotante (año actual) ---------- */
+.scene__timestamp {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.25em;
+  color: var(--color-paper-faint);
+  text-transform: uppercase;
+}
+
+/* ---------- Diagnóstico superior de capítulo ---------- */
+.chrome__chapter {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-paper-faint);
+  transition: var(--transition-token);
+}
+
+/* ---------- Loader ---------- */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--color-ink);
+  transition: opacity var(--speed-base) var(--ease-out);
+}
+
+.loader.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loader__mark {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  letter-spacing: 0.12em;
+  color: var(--color-paper);
+}
+
+.loader__bar {
+  margin-top: var(--space-4);
+  width: 160px;
+  height: 1px;
+  background: var(--color-line);
+  overflow: hidden;
+  position: relative;
+}
+
+.loader__bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-paper);
+  transform: translateX(-100%);
+  animation: loading 1.2s var(--ease-in-out) infinite;
+}
+
+@keyframes loading {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------- Touch: ocultar rail ---------- */
+@media (hover: none), (max-width: 640px) {
+  .rail {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .chrome {
+    height: 3.8rem;
+    padding-left: max(1rem, env(safe-area-inset-left, 0));
+    padding-right: max(1rem, env(safe-area-inset-right, 0));
+  }
+
+  .chrome__brand {
+    font-size: 1.05rem;
+  }
+
+  .chrono-hud {
+    padding: 0.25rem 0.65rem;
+    font-size: 0.68rem;
+  }
+
+  .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .chrome__meta {
+    gap: var(--space-2);
+  }
+
+  .chrome__chapter {
+    display: none;
+  }
+}

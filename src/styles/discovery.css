@@ -1,0 +1,133 @@
+/* ============================================================
+   CODECHRONICLES — Descubrimiento & fuentes (FASE 3/5/6)
+   ============================================================ */
+
+/* ---------- Modal de descubrimiento ---------- */
+.discovery {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--gutter);
+  background: rgba(5, 6, 8, 0.78);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--speed-base) var(--ease-out);
+}
+
+.discovery.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.discovery__panel {
+  width: min(42rem, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--color-ink);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-12) var(--space-8);
+  position: relative;
+  transform: translateY(1rem);
+  transition: transform var(--speed-base) var(--ease-out);
+}
+
+.discovery.is-open .discovery__panel {
+  transform: translateY(0);
+}
+
+.discovery__close {
+  position: absolute;
+  top: var(--space-6);
+  right: var(--space-6);
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 50%;
+  color: var(--color-paper-dim);
+  display: grid;
+  place-items: center;
+  transition: var(--transition-token);
+}
+
+.discovery__close:hover {
+  color: var(--color-paper);
+  border-color: var(--color-paper-faint);
+}
+
+.discovery__content {
+  display: grid;
+  gap: var(--space-6);
+  justify-items: start;
+}
+
+.discovery__title {
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+}
+
+.discovery__meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-paper-faint);
+}
+
+.discovery__body {
+  font-size: var(--text-md);
+  line-height: 1.8;
+  color: var(--color-paper-dim);
+}
+
+/* ---------- Etiquetas / tags ---------- */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-paper-dim);
+  border: 1px solid var(--color-line);
+  border-radius: 99px;
+  padding: 0.25em 0.75em;
+}
+
+/* ---------- Fuentes ---------- */
+.sources {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  border-top: 1px solid var(--color-line);
+  padding-top: var(--space-6);
+}
+
+.sources__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-paper-faint);
+}
+
+.source-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-paper-dim);
+}
+
+.source-item a {
+  color: var(--ch-accent, var(--color-paper));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <!-- Gradiente de fondo obsidian cósmico -->
+    <radialGradient id="bgGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#182332"/>
+      <stop offset="60%" stop-color="#090e15"/>
+      <stop offset="100%" stop-color="#030508"/>
+    </radialGradient>
+
+    <!-- Gradiente de oro noble de Cronos -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff0be"/>
+      <stop offset="35%" stop-color="#f0c660"/>
+      <stop offset="70%" stop-color="#c99836"/>
+      <stop offset="100%" stop-color="#7d5918"/>
+    </linearGradient>
+
+    <!-- Gradiente de brillo ámbar -->
+    <linearGradient id="amberGlow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c99836"/>
+      <stop offset="50%" stop-color="#fcedb4"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+
+    <!-- Filtro de destello temporal sutil -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Disco base de protección y contraste -->
+  <circle cx="64" cy="64" r="60" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="2.5"/>
+
+  <!-- 2. Rueda del Tiempo exterior: Engranajes mecánicos y ranuras binarias de tarjetas perforadas -->
+  <g stroke="url(#goldGrad)" stroke-width="1.8" fill="none" opacity="0.85">
+    <!-- Círculo interior de graduaciones -->
+    <circle cx="64" cy="64" r="53" stroke-dasharray="2.5 5.5" stroke-width="1.4"/>
+    <circle cx="64" cy="64" r="48" stroke-width="0.8" opacity="0.5"/>
+
+    <!-- 4 Dientes de engranaje cardinales de la Máquina Analítica -->
+    <line x1="64" y1="4" x2="64" y2="11" stroke-width="3" stroke-linecap="round"/>
+    <line x1="64" y1="117" x2="64" y2="124" stroke-width="3" stroke-linecap="round"/>
+    <line x1="4" y1="64" x2="11" y2="64" stroke-width="3" stroke-linecap="round"/>
+    <line x1="117" y1="64" x2="124" y2="64" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Perforaciones binarias de Lovelace/Jacquard en las diagonales -->
+    <circle cx="28" cy="28" r="2.2" fill="#f0c660" stroke="none"/>
+    <circle cx="100" cy="28" r="2.2" fill="#f0c660" stroke="none"/>
+    <circle cx="28" cy="100" r="2.2" fill="#f0c660" stroke="none"/>
+    <circle cx="100" cy="100" r="2.2" fill="#f0c660" stroke="none"/>
+  </g>
+
+  <!-- 3. Órbita armilar / Anillo giroscópico inclinado (símbolo del flujo temporal) -->
+  <ellipse cx="64" cy="64" rx="46" ry="18" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-dasharray="5 3" transform="rotate(-30 64 64)" opacity="0.65"/>
+
+  <!-- 4. La Hoz de Cronos entrelazada en forma de 'C' (Code & Chronicles) -->
+  <path d="M 76 22 A 42 42 0 1 0 76 106 A 48 48 0 0 1 76 22 Z" fill="url(#goldGrad)" filter="url(#glow)"/>
+
+  <!-- Resalte interior de la hoja de Cronos -->
+  <path d="M 68 28 A 36 36 0 0 0 34 64 A 36 36 0 0 0 68 100" fill="none" stroke="#fff5d0" stroke-width="1.5" opacity="0.75" stroke-linecap="round"/>
+
+  <!-- 5. Sintaxis de Programación en el Núcleo: Brackets < / > y Eje de Reloj -->
+  <!-- Corchete izquierdo < -->
+  <path d="M 52 52 L 42 64 L 52 76" fill="none" stroke="#fffbf0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Slash central / Aguja del tiempo de Cronos / -->
+  <line x1="72" y1="44" x2="56" y2="84" stroke="url(#amberGlow)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/>
+
+  <!-- Corchete derecho > -->
+  <path d="M 76 52 L 86 64 L 76 76" fill="none" stroke="#fffbf0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- 6. Singularidad temporal: Estrella de 4 puntas en el punto de fuga -->
+  <g transform="translate(64, 64)">
+    <circle cx="0" cy="0" r="3.5" fill="#ffffff" filter="url(#glow)"/>
+    <path d="M 0 -8 L 1.5 -2 L 7 0 L 1.5 2 L 0 8 L -1.5 2 L -7 0 L -1.5 -2 Z" fill="#fff5cc"/>
+  </g>
+</svg>

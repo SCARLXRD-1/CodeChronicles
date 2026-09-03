@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CodeChronicles Architecture",
+    "output": "codechronicles-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "runtime-flow",
+        "label": "Client Runtime Flow",
+        "focus": ["user", "core", "scene_3d", "editorial", "ui_controller"],
+        "note": "User interactions drive the core orchestrator, triggering 3D visual updates and editorial layout rendering."
+      },
+      {
+        "id": "content-data",
+        "label": "Editorial and Historical Corpus",
+        "focus": ["corpus", "core", "editorial", "workbenches"],
+        "note": "The static historical corpus hydrates the core engine to power chapters, stats, and interactive workbenches."
+      },
+      {
+        "id": "sensory-experience",
+        "label": "Audiovisual and Sandboxes",
+        "focus": ["scene_3d", "sound", "ui_controller", "workbenches"],
+        "note": "Synchronized Three.js scenes, procedural Web Audio synthesizer, and executable computing workbenches."
+      }
+    ]
+  },
+  "components": [
+    { "id": "build_system", "type": "cloud", "label": "Vite 6 Pipeline", "sublabel": "TypeScript & Rollup", "pos": [40, 100], "size": [130, 60] },
+    { "id": "user", "type": "external", "label": "Reader & Explorer", "sublabel": "Browser / WebGL", "pos": [40, 240], "size": [130, 60] },
+    { "id": "corpus", "type": "database", "label": "Historical Corpus", "sublabel": "Data & Milestones", "pos": [40, 380], "size": [130, 60] },
+    { "id": "core", "type": "frontend", "label": "App Shell", "sublabel": "main.ts orchestrator", "pos": [280, 240], "size": [140, 60] },
+    { "id": "scene_3d", "type": "frontend", "label": "3D Chronos Engine", "sublabel": "ThreeScene.ts WebGL", "pos": [530, 100], "size": [150, 60] },
+    { "id": "editorial", "type": "frontend", "label": "Editorial Engine", "sublabel": "11 Chapter Stories", "pos": [530, 240], "size": [150, 60] },
+    { "id": "ui_controller", "type": "frontend", "label": "UI Controller", "sublabel": "Scrubber & Controls", "pos": [530, 380], "size": [150, 60] },
+    { "id": "workbenches", "type": "frontend", "label": "Interactive Labs", "sublabel": "Code Sandboxes", "pos": [790, 240], "size": [150, 60] },
+    { "id": "sound", "type": "frontend", "label": "Spatial Audio", "sublabel": "Web Audio API", "pos": [790, 380], "size": [150, 60] }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Browser Client Runtime",
+      "wraps": ["core", "scene_3d", "editorial", "ui_controller", "workbenches", "sound"],
+      "pad": 20
+    },
+    {
+      "kind": "security-group",
+      "label": "Static Data Assets",
+      "wraps": ["corpus"],
+      "pad": 14
+    }
+  ],
+  "connections": [
+    { "id": "build-to-core", "from": "build_system", "to": "core", "label": "builds", "variant": "dashed", "fromSide": "right", "toSide": "top" },
+    { "id": "user-to-core", "from": "user", "to": "core", "label": "interacts", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "corpus-to-core", "from": "corpus", "to": "core", "label": "hydrates", "fromSide": "right", "toSide": "bottom" },
+    { "id": "core-to-scene", "from": "core", "to": "scene_3d", "label": "renders 3D", "fromSide": "top", "toSide": "left" },
+    { "id": "core-to-editorial", "from": "core", "to": "editorial", "label": "mounts", "fromSide": "right", "toSide": "left" },
+    { "id": "core-to-ui", "from": "core", "to": "ui_controller", "label": "binds", "fromSide": "bottom", "toSide": "left" },
+    { "id": "editorial-to-workbenches", "from": "editorial", "to": "workbenches", "label": "embeds labs", "fromSide": "right", "toSide": "left" },
+    { "id": "ui-to-sound", "from": "ui_controller", "to": "sound", "label": "triggers audio", "fromSide": "right", "toSide": "left" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Editorial & Story Layer",
+      "items": [
+        "11 Historical Chapters spanning Mechanical Beginnings to Quantum Computing",
+        "Rich biographies, machine hardware breakdowns, and key computing events",
+        "Strictly typed static data corpus decoupled from rendering logic"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Interactive Workbenches",
+      "items": [
+        "Hands-on Smalltalk-72 object messaging sandbox",
+        "CERN line-mode browser hypertext emulator",
+        "Attention head matrix interactive explorer and Q# quantum simulator"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Audiovisual Immersion",
+      "items": [
+        "Real-time Three.js WebGL scene with procedural particles and Chronos glyphs",
+        "Generative Web Audio synthesizer with dynamic atmospheric harmonics",
+        "Optimized Vite 6 + TypeScript client-side build with zero external runtime deps"
+      ]
+    }
+  ]
+}

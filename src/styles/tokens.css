@@ -1,0 +1,96 @@
+/* ============================================================
+   CODECHRONICLES — Design Tokens
+   FASE 1 · Dirección visual · Editorial + Cinemática + Minimalista
+   Paleta: near-black · blue-charcoal · warm amber · bone white · vermilion
+   ============================================================ */
+
+:root {
+  /* ---------- Paleta base — cinemática oscura (por defecto) ---------- */
+  --color-ink: #05070a;
+  --color-ink-soft: #0a0e12;
+  --color-panel: #10161a;
+
+  --color-line: rgba(223, 231, 224, 0.13);
+  --color-line-strong: rgba(223, 231, 224, 0.2);
+
+  --color-paper: #ffffff;
+  --color-paper-dim: #d8e5dd;
+  --color-paper-faint: #abbcb1;
+
+  /* ---------- Acentos históricos por época ---------- */
+  --color-warm: #c9a24a;     /* primeras máquinas: papel y metal cálido */
+  --color-cold: #8aa8c4;     /* computación: luz fría, paneles */
+  --color-electron: #6f86a3; /* ensamblador / sistemas */
+  --color-brass: #b58a4c;    /* primeros lenguajes */
+  --color-scribe: #a2533f;   /* POO (rojo quemado) */
+  --color-tech: #c9a24a;     /* era moderna */
+  --color-web: #e0231c;      /* web — vermilion */
+  --color-system: #7b8fa3;   /* sistemas modernos */
+  --color-ai: #c8392a;       /* IA — vermilion profundo */
+  --color-future: #e35a3c;   /* futuro — ember */
+
+  /* ---------- Señales cromáticas globales ---------- */
+  --vermilion: #e0231c;
+  --ember: #ff5a3c;
+  --gold: #c9a24a;
+  --bone: #dfe7e0;
+
+  /* ---------- Tipografía ---------- */
+  --font-display: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+  --font-sans: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* ---------- Escala tipográfica ---------- */
+  --text-xs: 0.6875rem; /* 11px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-md: 0.9375rem; /* 15px */
+  --text-lg: 1.1875rem; /* 19px */
+  --text-xl: 1.625rem; /* 26px */
+  --text-2xl: 2.25rem; /* 36px */
+  --text-3xl: 3.25rem; /* 52px */
+  --text-4xl: 4.75rem; /* 76px */
+  --text-5xl: 6.5rem; /* 104px */
+
+  /* ---------- Espaciado ---------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+  --space-48: 12rem;
+
+  /* ---------- Composición ---------- */
+  --gutter: clamp(1rem, 4vw, 4rem);
+  --pad: clamp(20px, 3.4vw, 56px);
+  --max-width: 72rem;
+  --measure: 34rem; /* longitud de línea editorial */
+  --header-h: 4.5rem;
+  --nav-h: 84px;
+  --rail-w: 4rem;
+
+  /* ---------- Cinemática ---------- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --speed-slow: 1400ms;
+  --speed-base: 800ms;
+  --speed-fast: 350ms;
+
+  /* ---------- Efectos ---------- */
+  --blur-md: blur(16px);
+  --vignette-strength: 0.85;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  /* ---------- Estados ---------- */
+  --focus-ring: 2px solid var(--color-paper);
+  --transition-token: color 250ms var(--ease-out), background-color 250ms var(--ease-out),
+    border-color 250ms var(--ease-out), opacity 250ms var(--ease-out),
+    transform 400ms var(--ease-out);
+}

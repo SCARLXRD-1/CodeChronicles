@@ -1,0 +1,101 @@
+import type { QuoteEntry } from '../types';
+
+export const quotes: QuoteEntry[] = [
+  {
+    id: 'ada-symbols',
+    text: 'La Máquina Analítica teje patrones algebraicos, igual que el telar de Jacquard teje flores y hojas.',
+    textOriginal: 'The Analytical Engine weaves algebraic patterns, just as the Jacquard loom weaves flowers and leaves.',
+    author: 'Ada Lovelace',
+    year: 1843,
+    era: 'pre-code',
+    context: 'Notas sobre la Máquina Analítica, 1843.',
+    source: {
+      title: 'Notas de Ada Lovelace sobre la Máquina Analítica',
+      type: 'primary',
+    },
+  },
+  {
+    id: 'babbage-arithmetic',
+    text: 'Toda la aritmética quedó ahora al alcance del mecanismo.',
+    textOriginal: 'The whole of arithmetic now appeared within the grasp of mechanism.',
+    author: 'Charles Babbage',
+    year: 1864,
+    era: 'pre-code',
+    context: 'Pasajes de la vida de un filósofo.',
+    source: {
+      title: 'Babbage, Pasajes de la vida de un filósofo (1864)',
+      type: 'book',
+    },
+  },
+  {
+    id: 'turing-future',
+    text: 'Solo podemos ver un poco más allá, pero vemos allí mucho que aún hay que hacer.',
+    textOriginal: 'We can only see a short distance ahead, but we can see plenty there that needs to be done.',
+    author: 'Alan Turing',
+    year: 1950,
+    era: 'algorithms',
+    context: 'Computing Machinery and Intelligence, 1950.',
+    source: {
+      title: 'Turing, Máquinas de computación e inteligencia (1950)',
+      type: 'paper',
+    },
+  },
+  {
+    id: 'hopper-dangerous',
+    text: 'La frase más peligrosa del lenguaje es: "siempre lo hemos hecho así".',
+    textOriginal: 'The most dangerous phrase in the language is "We\'ve always done it this way".',
+    author: 'Grace Hopper',
+    era: 'first-languages',
+    context: 'Discurso célebre sobre el cambio y la innovación.',
+  },
+  {
+    id: 'kay-future',
+    text: 'La mejor forma de predecir el futuro es inventarlo.',
+    textOriginal: 'The best way to predict the future is to invent it.',
+    author: 'Alan Kay',
+    era: 'oop',
+    context: 'Reflexión sobre la computación personal e interactiva.',
+  },
+  {
+    id: 'ritchie-c',
+    text: 'La única forma de aprender un lenguaje de programación nuevo es escribiendo programas en él.',
+    textOriginal: 'The only way to learn a new programming language is by writing programs in it.',
+    author: 'Dennis Ritchie',
+    era: 'systems',
+    context: 'Reflexión sobre el aprendizaje de lenguajes.',
+  },
+  {
+    id: 'matsumoto-language',
+    text: 'Un lenguaje da forma al pensamiento. Quería un lenguaje cercano al pensamiento humano.',
+    textOriginal: 'A language is a shaper of thought. I wanted a language that was close to human thought.',
+    author: 'Yukihiro Matsumoto',
+    era: 'modern',
+    context: 'Entrevistas sobre el diseño de Ruby.',
+  },
+  {
+    id: 'eich-js',
+    text: 'Apuesta siempre por JavaScript.',
+    textOriginal: 'Always bet on JavaScript.',
+    author: 'Brendan Eich',
+    era: 'web',
+    context: 'Reflexión sobre la evolución de JavaScript en la web.',
+  },
+  {
+    id: 'stroustrup-complain',
+    text: 'Solo hay dos tipos de lenguajes: aquellos de los que la gente se queja y aquellos que nadie usa.',
+    textOriginal: 'There are only two kinds of languages: the ones people complain about and the ones nobody uses.',
+    author: 'Bjarne Stroustrup',
+    era: 'oop',
+    context: 'Respecto a las críticas a C++.',
+  },
+  {
+    id: 'griesemer-race',
+    text: 'Estamos construyendo un lenguaje para el futuro, para quienes construirán la próxima generación de software.',
+    textOriginal: 'We are building a language for the future, for the people who will build the next generation of software.',
+    author: 'Robert Griesemer',
+    era: 'modern',
+    context: 'Sobre el diseño de Go.',
+  },
+];
+
+export const getQuote = (id: string) => quotes.find((q) => q.id === id);
