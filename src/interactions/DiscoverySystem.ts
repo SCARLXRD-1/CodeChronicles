@@ -187,6 +187,46 @@ export class DiscoverySystem {
   bind() {
     const links = document.querySelectorAll<HTMLElement>('[data-discover]');
     links.forEach((el) => {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchMoved = false;
+
+      el.addEventListener(
+        'touchstart',
+        (e) => {
+          if (e.touches.length === 1) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchMoved = false;
+          }
+        },
+        { passive: true },
+      );
+
+      el.addEventListener(
+        'touchmove',
+        (e) => {
+          if (e.touches.length === 1) {
+            const dx = Math.abs(e.touches[0].clientX - touchStartX);
+            const dy = Math.abs(e.touches[0].clientY - touchStartY);
+            if (dx > 12 || dy > 12) {
+              touchMoved = true;
+            }
+          }
+        },
+        { passive: true },
+      );
+
+      el.addEventListener('touchend', (e) => {
+        if (!touchMoved) {
+          const id = el.getAttribute('data-discover');
+          if (id) {
+            e.preventDefault();
+            this.open(id);
+          }
+        }
+      });
+
       el.addEventListener('click', (e) => {
         e.preventDefault();
         const id = el.getAttribute('data-discover');

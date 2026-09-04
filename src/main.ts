@@ -90,6 +90,7 @@ function init() {
     ribbon.scrollToProgress(currentProgress);
     revealFx.rescan();
     spatialPresenter.refresh();
+    discovery.bind();
   });
 
   ui.bindRail((chapterId) => {
@@ -128,11 +129,54 @@ function init() {
     else if (kind === 'character') store.markDiscovered(id, 'charactersExplored');
     else store.markDiscovered(id, 'discovered');
   };
+  discovery.bind();
+
+  // Escuchadores globales de clic y toque para abrir Discovery modal
   document.addEventListener('click', (e) => {
     const link = (e.target as HTMLElement).closest<HTMLElement>('[data-discover]');
     if (link) {
       e.preventDefault();
       const id = link.getAttribute('data-discover');
+      if (id) discovery.open(id);
+    }
+  });
+
+  let globalTouchX = 0;
+  let globalTouchY = 0;
+  let globalTouchMoved = false;
+
+  document.addEventListener(
+    'touchstart',
+    (e) => {
+      if (e.touches.length === 1) {
+        globalTouchX = e.touches[0].clientX;
+        globalTouchY = e.touches[0].clientY;
+        globalTouchMoved = false;
+      }
+    },
+    { passive: true },
+  );
+
+  document.addEventListener(
+    'touchmove',
+    (e) => {
+      if (e.touches.length === 1) {
+        const dx = Math.abs(e.touches[0].clientX - globalTouchX);
+        const dy = Math.abs(e.touches[0].clientY - globalTouchY);
+        if (dx > 12 || dy > 12) {
+          globalTouchMoved = true;
+        }
+      }
+    },
+    { passive: true },
+  );
+
+  document.addEventListener('touchend', (e) => {
+    if (globalTouchMoved) return;
+    const target = (e.target as HTMLElement).closest<HTMLElement>('[data-discover]');
+    if (target) {
+      e.preventDefault();
+      const id = target.getAttribute('data-discover');
       if (id) discovery.open(id);
     }
   });

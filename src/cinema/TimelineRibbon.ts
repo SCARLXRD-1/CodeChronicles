@@ -236,7 +236,9 @@ export class TimelineRibbon {
 
     // Umbral de inicio de arrastre horizontal (touch slop)
     if (!this.touchThresholdMet) {
-      if (totalDeltaX > 7 && totalDeltaX > totalDeltaY) {
+      const isCard = Boolean(targetEl?.closest('[data-discover]'));
+      const minThreshold = isCard ? 15 : 7;
+      if (totalDeltaX > minThreshold && totalDeltaX > totalDeltaY) {
         this.touchThresholdMet = true;
       } else if (totalDeltaY > 10) {
         return;
