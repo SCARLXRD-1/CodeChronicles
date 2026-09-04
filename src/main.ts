@@ -1,6 +1,8 @@
 import './styles/index.css';
 import type { Experience } from './experience/Experience';
 import { ChroniclesUI } from './ui/ChroniclesUI';
+import { initI18n, onLanguageChange, loadSavedLanguage } from './i18n';
+import { masterDict } from './i18n/dicts';
 import { DiscoverySystem } from './interactions/DiscoverySystem';
 import { PersistenceStore } from './persistence/PersistenceStore';
 import { PerfMonitor } from './perf/PerfMonitor';
@@ -9,9 +11,13 @@ import { ForegroundSystem } from './cinema/ForegroundSystem';
 import { CursorFX } from './cinema/CursorFX';
 import { ChapterFlash } from './cinema/ChapterFlash';
 import { SpatialPresenter } from './cinema/SpatialPresenter';
+import { TimelineRibbon } from './cinema/TimelineRibbon';
 import type { ChapterMeta } from './data/chapters';
 
 function init() {
+  // Idioma guardado (por defecto español)
+  initI18n(masterDict, loadSavedLanguage());
+
   const store = new PersistenceStore();
 
   const ui = new ChroniclesUI();
@@ -19,7 +25,7 @@ function init() {
 
   // Capa cinematográfica: reveals, foreground, cursor, spatial 3D
   const mainCanvas = document.querySelector('#overlay') as HTMLElement;
-  void new RevealFx(mainCanvas);
+  const revealFx = new RevealFx(mainCanvas);
   void new ForegroundSystem(mainCanvas);
   void new CursorFX();
   const flash = new ChapterFlash();
@@ -34,59 +40,68 @@ function init() {
     experience = new ExperienceCls();
     experience.start();
   });
+
   let activeChapter: ChapterMeta | null = null;
   let lastFlashTime = 0;
-  ui.onActiveSection = ({ chapter }) => {
-    const now = Date.now();
-    if (chapter && chapter.number > 0 && chapter.id !== activeChapter?.id) {
-      activeChapter = chapter;
-      // Previene ráfagas de parpadeo si el usuario se detiene cerca del límite de un capítulo
-      if (now - lastFlashTime > 2500) {
-        lastFlashTime = now;
-        flash.show(chapter);
+
+  // Controlador de Cinta Temporal Horizontal (Timeline Ribbon)
+  const ribbon = new TimelineRibbon({
+    container: mainCanvas,
+    onProgress: (progress, velocity, currentX) => {
+      ui.onScroll(progress);
+      experience?.setRibbonProgress(progress, currentX, velocity);
+      store.saveScroll(progress);
+
+      const hero = document.getElementById('hero');
+      if (hero) {
+        const ph = Math.min(1, Math.max(0, progress * 5));
+        hero.style.setProperty('--p', ph.toFixed(3));
       }
-    }
+    },
+    onActiveChapter: (chapter) => {
+      const now = Date.now();
+      if (chapter && chapter.number > 0 && chapter.id !== activeChapter?.id) {
+        activeChapter = chapter;
+        if (now - lastFlashTime > 2500) {
+          lastFlashTime = now;
+          flash.show(chapter);
+        }
+      }
+      if (chapter) {
+        experience?.setActiveChapter(chapter);
+        store.markChapterVisited(chapter.id);
+        ui.highlight(chapter, true);
+      }
+    },
+  });
+
+  ui.onActiveSection = ({ chapter }) => {
     if (chapter) {
       experience?.setActiveChapter(chapter);
       store.markChapterVisited(chapter.id);
     }
   };
 
-  // Sincronizar barra de progreso con scroll + salida cinemática del hero
-  let scrollTick = 0;
-  const sync = () => {
-    const max = Math.max(
-      1,
-      document.documentElement.scrollHeight - window.innerHeight,
-    );
-    const p = Math.min(1, window.scrollY / max);
-    cancelAnimationFrame(scrollTick);
-    scrollTick = requestAnimationFrame(() => {
-      ui.onScroll(p);
-      // el contenido del hero se desvanece solo cuando su base cruza el
-      // borde inferior del viewport (al inicio del viaje → p = 0)
-      const hero = document.getElementById('hero');
-      if (hero) {
-        const r = hero.getBoundingClientRect();
-        const ph = Math.min(1, Math.max(0, (window.innerHeight - r.bottom) / Math.max(1, window.innerHeight)));
-        hero.style.setProperty('--p', ph.toFixed(3));
-      }
-    });
-    store.saveScroll(window.scrollY);
-  };
-  window.addEventListener('scroll', sync, { passive: true });
-  sync();
+  // Al cambiar el idioma, re-renderiza el contenido editorial conservando la posición de la cinta
+  onLanguageChange(() => {
+    const currentProgress = ribbon.getProgress();
+    ui.mount();
+    ribbon.mount();
+    ribbon.scrollToProgress(currentProgress);
+    revealFx.rescan();
+    spatialPresenter.refresh();
+  });
+
   ui.bindRail((chapterId) => {
     spatialPresenter.triggerWarpImpulse(0.7);
-    const el = document.querySelector(`[data-section="${chapterId}"]`);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    ribbon.scrollToSection(chapterId);
   });
 
   // Persistencia: restaurar posición al volver (si se recarga la página)
   const savedScroll = store.getState().lastScroll;
   if (savedScroll > 0) {
     window.requestAnimationFrame(() => {
-      window.scrollTo({ top: savedScroll, behavior: 'auto' });
+      ribbon.scrollToProgress(Math.min(1, savedScroll));
     });
   }
 
@@ -119,6 +134,18 @@ function init() {
       e.preventDefault();
       const id = link.getAttribute('data-discover');
       if (id) discovery.open(id);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const active = document.activeElement as HTMLElement | null;
+      const target = active?.closest<HTMLElement>('[data-discover]');
+      if (target) {
+        e.preventDefault();
+        const id = target.getAttribute('data-discover');
+        if (id) discovery.open(id);
+      }
     }
   });
 

@@ -5,6 +5,7 @@ import { getMachine } from '../data/machines';
 import { getEvent } from '../data/events';
 import { interactiveTimelineMarkup } from '../history/InteractiveTimeline';
 import { comparisonMarkup } from '../interactions/LanguageComparison';
+import { tr } from '../i18n';
 
 export function esc(s: string): string {
   return s
@@ -14,26 +15,9 @@ export function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-const SIDE_LABELS: Record<string, string> = {
-  'pre-code': 'Antes del Código',
-  algorithms: 'Algoritmos',
-  machines: 'Las Máquinas',
-  'machine-language': 'Código Máquina',
-  assembly: 'Ensamblador',
-  computers: 'Computadoras',
-  'first-languages': 'Primeros Lenguajes',
-  enterprise: 'Lenguajes de Gestión',
-  structured: 'Estructura',
-  c: 'Sistemas',
-  oop: 'Los Objetos',
-  modern: 'Era Moderna',
-  internet: 'Internet',
-  web: 'La Web',
-  mobile: 'Móvil',
-  systems: 'Sistemas',
-  ai: 'IA',
-  future: 'Futuro',
-};
+function getSideLabel(era: string): string {
+  return tr(`era.${era}`) || era;
+}
 
 /**
  * Hero Cinematográfico
@@ -44,18 +28,19 @@ const SIDE_LABELS: Record<string, string> = {
 export function heroMarkup(): string {
   return `
     <header class="hero hero-layout" id="hero" data-section="hero">
+      <div class="diorama-monolith diorama-monolith--hero" aria-hidden="true">1843 → 2026</div>
       <div class="hero-top" data-reveal>
-        <div class="eyebrow" data-rv><span class="dot"></span> CAPÍTULO 00 — EL UMBRAL DEL CÓDIGO</div>
+        <div class="eyebrow" data-rv><span class="dot"></span> ${tr('hero.eyebrow')}</div>
         <h1 class="display display--xl" data-rv>
-          <span class="mask-line"><span>Donde las ideas</span></span>
-          <span class="mask-line"><span>se convierten en</span></span>
-          <span class="mask-line"><span>lenguaje.</span></span>
+          <span class="mask-line"><span>${tr('hero.line1')}</span></span>
+          <span class="mask-line"><span>${tr('hero.line2')}</span></span>
+          <span class="mask-line"><span>${tr('hero.line3')}</span></span>
         </h1>
-        <p class="hero-sub body" data-rv>Un viaje interactivo y cinematográfico por la historia viva del software, desde las tarjetas de seda de Lovelace hasta la era de la inteligencia artificial.</p>
+        <p class="hero-sub body" data-rv>${tr('hero.sub')}</p>
       </div>
 
       <aside class="peek" data-rv="up">
-        <a class="peek-fr" href="#ch-01-before-code" aria-label="Explorar Capítulo 01">
+        <a class="peek-fr" href="#ch-01-before-code" aria-label="${tr('hero.explore.ch1')}">
           <span class="peek-play" aria-hidden="true">
             <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="#dfe7e0" stroke-width="1.5"/><path d="m20 16 12 8-12 8V16z" fill="#dfe7e0"/></svg>
           </span>
@@ -68,36 +53,36 @@ export function heroMarkup(): string {
 
       <div class="hero-foot" data-reveal>
         <div class="hero-cue" data-rv>
-          <span>Desplázate para viajar</span>
+          <span>${tr('hero.scroll')}</span>
           <span class="track"><i aria-hidden="true"></i></span>
         </div>
-        <nav class="chapters-grid" data-rv="up" aria-label="Capítulos de la crónica">
+        <nav class="chapters-grid" data-rv="up" aria-label="${tr('hero.chapters.label')}">
           <a class="chip" href="#ch-01-before-code">
             <span class="num">01</span>
             <div class="tx">
-              <b>Antes del Código</b>
-              <p>Telares, Babbage y el primer algoritmo de 1843.</p>
+              <b>${tr('ch.ch-01-before-code.title')}</b>
+              <p>${tr('ct.hero.chip1')}</p>
             </div>
           </a>
           <a class="chip" href="#ch-02-machines">
             <span class="num">02</span>
             <div class="tx">
-              <b>Las Máquinas</b>
-              <p>Turing, relés electromagnéticos y el amanecer del silicio.</p>
+              <b>${tr('ch.ch-02-machines.title')}</b>
+              <p>${tr('ct.hero.chip2')}</p>
             </div>
           </a>
           <a class="chip" href="#ch-04-languages">
             <span class="num">03</span>
             <div class="tx">
-              <b>Primeros Lenguajes</b>
-              <p>Fortran, Lisp, COBOL y los compiladores de Grace Hopper.</p>
+              <b>${tr('ch.ch-04-languages.title')}</b>
+              <p>${tr('ct.hero.chip3')}</p>
             </div>
           </a>
           <a class="chip" href="#ch-05-systems">
             <span class="num">04</span>
             <div class="tx">
-              <b>Sistemas y Red</b>
-              <p>C, Unix, objetos y el software que sostiene el mundo.</p>
+              <b>${tr('ch.ch-05-systems.title')}</b>
+              <p>${tr('ct.hero.chip4')}</p>
             </div>
           </a>
         </nav>
@@ -113,7 +98,6 @@ export function heroMarkup(): string {
  * - Cards-stagger (3 tarjetas con outline sutil, hover orgánico y metadatos)
  */
 function chapterMarkup(ch: ChapterMeta): string {
-  const eraText = ch.era.toUpperCase().replace(/-/g, ' ');
   const char = getChapterCharacter(ch);
   const lang = getChapterLanguage(ch);
   const machine = getChapterMachine(ch);
@@ -125,104 +109,113 @@ function chapterMarkup(ch: ChapterMeta): string {
   const cardsHTML: string[] = [];
 
   if (char) {
+    const prof = tr(`card.char.${char.id}.profession`, char.profession);
+    const quote = char.quote ? tr(`card.char.${char.id}.quote`, char.quote) : '';
     cardsHTML.push(`
-      <article class="card" data-rv="up">
+      <article class="card card--interactive" data-rv="up" data-discover="${char.id}" role="button" tabindex="0" aria-label="${esc(char.name)}">
         ${arSvg}
-        <p class="eyebrow eyebrow--accent">Figura Histórica</p>
+        <p class="eyebrow eyebrow--accent">${tr('ct.card.figure')}</p>
         <h3 class="display display--md">${esc(char.name)}</h3>
-        <p class="meta">${esc(char.profession)} · ${esc(char.years)}</p>
-        ${char.quote ? `<blockquote class="scene__quote"><p>“${esc(char.quote)}”</p></blockquote>` : ''}
-        <div class="card-meta"><span>${esc(char.representation)}</span><span>${esc(char.years)}</span></div>
+        <p class="meta">${esc(prof)} · ${esc(char.years)}</p>
+        ${quote ? `<blockquote class="scene__quote"><p>“${esc(quote)}”</p></blockquote>` : ''}
+        <div class="card-meta">
+          <span>${esc(char.representation)}</span>
+          <span class="card-read-cue">${tr('ui.explore')} ↗</span>
+        </div>
       </article>`);
   }
 
   if (lang) {
+    const context = tr(`card.lang.${lang.id}.context`, lang.historicalContext);
     cardsHTML.push(`
-      <article class="card" data-rv="up">
+      <article class="card card--interactive" data-rv="up" data-discover="${lang.id}" role="button" tabindex="0" aria-label="${esc(lang.name)}">
         ${arSvg}
-        <p class="eyebrow eyebrow--accent">Lenguaje Clave</p>
+        <p class="eyebrow eyebrow--accent">${tr('ct.card.language')}</p>
         <h3 class="display display--md">${esc(lang.name)}</h3>
         <p class="meta">${esc(lang.creators.join(', '))} · ${lang.year}</p>
-        <p class="body-text">${esc(lang.historicalContext)}</p>
-        <div class="card-meta"><span>${esc(lang.paradigms.join(' · '))}</span><span>${lang.year}</span></div>
+        <p class="body-text">${esc(context)}</p>
+        <div class="card-meta">
+          <span>${esc(lang.paradigms.join(' · '))}</span>
+          <span class="card-read-cue">${tr('ui.explore')} ↗</span>
+        </div>
       </article>`);
   }
 
   if (machine) {
+    const desc = tr(`card.machine.${machine.id}.desc`, machine.description);
     cardsHTML.push(`
-      <article class="card" data-rv="up">
+      <article class="card card--interactive" data-rv="up" data-discover="${machine.id}" role="button" tabindex="0" aria-label="${esc(machine.name)}">
         ${arSvg}
-        <p class="eyebrow eyebrow--accent">Máquina / Hardware</p>
+        <p class="eyebrow eyebrow--accent">${tr('ct.card.machine')}</p>
         <h3 class="display display--md">${esc(machine.name)}</h3>
         <p class="meta">${esc(machine.creator)} · ${machine.year}</p>
-        <p class="body-text">${esc(machine.description)}</p>
-        <div class="card-meta"><span>Tecnología Física</span><span>${machine.year}</span></div>
+        <p class="body-text">${esc(desc)}</p>
+        <div class="card-meta">
+          <span>${tr('ct.card.tech')} · ${machine.year}</span>
+          <span class="card-read-cue">${tr('ui.explore')} ↗</span>
+        </div>
       </article>`);
   }
 
   if (event && cardsHTML.length < 3) {
+    const title = tr(`card.event.${event.id}.title`, event.title);
+    const desc = tr(`card.event.${event.id}.desc`, event.description);
     cardsHTML.push(`
-      <article class="card" data-rv="up">
+      <article class="card card--interactive" data-rv="up" data-discover="${event.id}" role="button" tabindex="0" aria-label="${esc(title)}">
         ${arSvg}
-        <p class="eyebrow eyebrow--accent">Acontecimiento Clave</p>
-        <h3 class="display display--md">${esc(event.title)}</h3>
+        <p class="eyebrow eyebrow--accent">${tr('ct.card.event')}</p>
+        <h3 class="display display--md">${esc(title)}</h3>
         <p class="meta">${event.year ?? ''}</p>
-        <p class="body-text">${esc(event.description)}</p>
-        <div class="card-meta"><span>Hito Histórico</span><span>${event.year ?? '—'}</span></div>
+        <p class="body-text">${esc(desc)}</p>
+        <div class="card-meta">
+          <span>${tr('ct.card.milestone')} · ${event.year ?? '—'}</span>
+          <span class="card-read-cue">${tr('ui.explore')} ↗</span>
+        </div>
       </article>`);
   }
 
   // Franja de estadísticas específicas del capítulo
   const stats = chapterStats(ch);
 
-  const gateSection = `
-    <section class="scene" id="${ch.id}" data-section="${ch.id}" data-era="${ch.era}">
+  return `
+    <section class="scene scene--diorama" id="${ch.id}" data-section="${ch.id}" data-era="${ch.era}">
+      <div class="diorama-monolith" aria-hidden="true">${esc(ch.yearLabel)}</div>
+
       <div class="sec-head" data-rv>
-        <span class="k"><b>${String(ch.number).padStart(2, '0')}</b> — ${esc(ch.subtitle)}</span>
+        <span class="k"><b>${String(ch.number).padStart(2, '0')}</b> — ${esc(tr(`ch.${ch.id}.subtitle`))}</span>
         <span class="rule"></span>
-        <span class="k">${esc(ch.yearLabel)} · ${esc(SIDE_LABELS[ch.era] ?? eraText)}</span>
+        <span class="k">${esc(ch.yearLabel)} · ${esc(tr(`era.${ch.era}`))}</span>
       </div>
 
-      <div class="gate-grid" data-reveal>
-        <h2 class="display display--lg" data-rv>${esc(ch.tagline)}</h2>
-        <div class="gate-copy">
-          <p class="lead" data-rv>${esc(ch.summary)}</p>
-          <p class="body-text" data-rv>${chapterExtraNarrative(ch)}</p>
-          ${
-            cardsHTML.length > 0
-              ? `<a class="arrowlink" href="#cards-${ch.id}" data-rv>
-                  <span>Explorar placas de la era</span>
-                  <span class="ar" aria-hidden="true"><svg viewBox="0 0 14 14" fill="none"><path d="M3 11 11 3M5 3h6v6" stroke="#dfe7e0" stroke-width="1.3"/></svg></span>
-                </a>`
-              : ''
-          }
+      <div class="diorama-layout">
+        <div class="diorama-narrative" data-reveal>
+          <h2 class="display display--lg" data-rv>${esc(tr(`ch.${ch.id}.tagline`))}</h2>
+          <div class="gate-copy">
+            <p class="lead" data-rv>${esc(tr(`ch.${ch.id}.summary`))}</p>
+            <p class="body-text" data-rv>${chapterExtraNarrative(ch)}</p>
+          </div>
+          <div class="gate-stats" data-rv>
+            ${stats.map((s) => `<div><b>${esc(s.val)}</b><span>${esc(tr(s.labelKey))}</span></div>`).join('')}
+          </div>
         </div>
-      </div>
 
-      <div class="gate-stats" data-rv>
-        ${stats.map((s) => `<div><b>${esc(s.val)}</b><span>${esc(s.label)}</span></div>`).join('')}
+        ${
+          cardsHTML.length > 0
+            ? `
+        <div class="diorama-stack" data-reveal>
+          <span id="cards-${ch.id}" class="diorama-anchor" aria-hidden="true"></span>
+          <div class="diorama-stack__glow" aria-hidden="true"></div>
+          ${cardsHTML
+            .map(
+              (card, idx) =>
+                `<div class="card-stack-item card-stack-item--${idx + 1}" style="--stack-idx: ${idx};">${card}</div>`,
+            )
+            .join('\n')}
+        </div>`
+            : ''
+        }
       </div>
     </section>`;
-
-  const cardsSection =
-    cardsHTML.length > 0
-      ? `
-    <section class="scene" id="cards-${ch.id}" data-section="cards-${ch.id}" data-era="${ch.era}">
-      <div class="sec-head" data-rv>
-        <span class="k"><b>${String(ch.number).padStart(2, '0')}.A</b> — Placas &amp; Protagonistas</span>
-        <span class="rule"></span>
-        <span class="k">${esc(ch.yearLabel)}</span>
-      </div>
-      <div data-reveal style="margin-bottom: 20px;">
-        <h2 class="display display--md" data-rv>Los artefactos y mentes que forjaron la era.</h2>
-      </div>
-      <div class="cards-stagger" data-reveal>
-        ${cardsHTML.join('')}
-      </div>
-    </section>`
-      : '';
-
-  return gateSection + '\n' + cardsSection;
 }
 
 /**
@@ -230,38 +223,39 @@ function chapterMarkup(ch: ChapterMeta): string {
  */
 function chapterWorkbenchMarkup(): string {
   return `
-    <section class="scene" id="ch-01-workbench" data-section="ch-01-workbench" data-era="pre-code">
+    <section class="scene scene--workbench" id="ch-01-workbench" data-section="ch-01-workbench" data-era="pre-code">
+      <div class="diorama-monolith" aria-hidden="true">1843</div>
       <div class="sec-head" data-rv>
-        <span class="k"><b>01.B</b> — Código Histórico &amp; Cronología Interactiva</span>
+        <span class="k"><b>01.B</b> — ${esc(tr('wb.01.tag'))}</span>
         <span class="rule"></span>
-        <span class="k">MANUSCRITO DE 1843</span>
+        <span class="k">${esc(tr('wb.01.subtag'))}</span>
       </div>
 
       <div class="gate-grid" data-reveal>
         <div>
-          <h3 class="display display--md" data-rv>El manuscrito que inició todo.</h3>
-          <p class="body-text" data-rv>A continuación se presenta la transcripción algorítmica del primer programa de la historia, formulado por Ada Lovelace para calcular los números de Bernoulli en la Máquina Analítica:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.01.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.01.desc'))}</p>
           <div class="tcode" data-rv>
             <div class="tcode__bar">
               <span class="tcode__dots" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="tcode__file">bernoulli_note_g_1843.alg</span>
-              <button class="tcode__copy" data-copy type="button" aria-label="Copiar código">Copiar</button>
+              <button class="tcode__copy" data-copy type="button" aria-label="${esc(tr('ui.copy_code_aria'))}">${esc(tr('ui.copy'))}</button>
             </div>
             <pre class="tcode__body" aria-label="bernoulli_note_g_1843.alg">
-// Operaciones de Lovelace para números de Bernoulli (1843)
-// Variables de columna V1..V8 en el Molino Analítico
-1.  V4  * V1  → V4     // Multiplicación inicial
-2.  V5  - V4  → V5     // Diferencia en acumulador
-3.  V6  + 1   → V6     // Incremento de índice n
-4.  B   ← V2 / 2       // Coeficiente de Bernoulli
-5.  resultado ← V3     // Salida al Almacén Mecánico
+// ${esc(tr('wb.01.code.c1'))}
+// ${esc(tr('wb.01.code.c2'))}
+1.  V4  * V1  → V4     // ${esc(tr('wb.01.code.c3'))}
+2.  V5  - V4  → V5     // ${esc(tr('wb.01.code.c4'))}
+3.  V6  + 1   → V6     // ${esc(tr('wb.01.code.c5'))}
+4.  B   ← V2 / 2       // ${esc(tr('wb.01.code.c6'))}
+5.  ${esc(tr('wb.01.code.res'))} ← V3     // ${esc(tr('wb.01.code.c7'))}
             <span class="tcode__caret" aria-hidden="true"></span></pre>
           </div>
         </div>
 
         <div>
-          <h3 class="display display--md" data-rv>Cronología interactiva de la era.</h3>
-          <p class="body-text" data-rv>Desliza o haz clic en los hitos para viajar paso a paso por los inventos que hicieron posible el software:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.01.timeline.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.01.timeline.desc'))}</p>
           ${interactiveTimelineMarkup()}
         </div>
       </div>
@@ -273,17 +267,18 @@ function chapterWorkbenchMarkup(): string {
  */
 function curriculumMilestonesMarkup(): string {
   return `
-    <section class="scene" id="ch-curriculum" data-section="ch-curriculum" data-era="first-languages">
+    <section class="scene scene--workbench" id="ch-curriculum" data-section="ch-curriculum" data-era="first-languages">
+      <div class="diorama-monolith" aria-hidden="true">1957</div>
       <div class="sec-head" data-rv>
-        <span class="k"><b>03.B</b> — Evolución de los Lenguajes</span>
+        <span class="k"><b>03.B</b> — ${esc(tr('wb.04.tag'))}</span>
         <span class="rule"></span>
-        <span class="k">HITOS FUNDACIONALES</span>
+        <span class="k">${esc(tr('wb.04.subtag'))}</span>
       </div>
 
       <div class="cur-head" data-reveal>
-        <h2 class="display display--lg" data-rv>La rebelión contra los ceros y unos: el nacimiento del compilador.</h2>
+        <h2 class="display display--lg" data-rv>${esc(tr('wb.04.head'))}</h2>
         <div data-rv>
-          <p class="lead">Antes de 1954, programar significaba manipular cables físicos o cadenas binarias. La invención del compilador demostró que las máquinas podían traducir la notación matemática y el lenguaje humano a silicio.</p>
+          <p class="lead">${esc(tr('wb.04.desc'))}</p>
         </div>
       </div>
 
@@ -292,9 +287,9 @@ function curriculumMilestonesMarkup(): string {
           <span class="k">01</span>
           <div>
             <h3>Fortran <em>IBM</em></h3>
-            <p>John Backus elimina el ensamblador: la traducción directa de fórmulas matemáticas a instrucciones de procesador.</p>
+            <p>${esc(tr('wb.04.m1.desc'))}</p>
           </div>
-          <p class="body-text">Probó que el código de alto nivel podía ser tan eficiente como el escrito a mano.</p>
+          <p class="body-text">${esc(tr('wb.04.m1.note'))}</p>
           <span class="t">1957</span>
           <i class="bar" aria-hidden="true"></i>
         </div>
@@ -303,9 +298,9 @@ function curriculumMilestonesMarkup(): string {
           <span class="k">02</span>
           <div>
             <h3>Lisp <em>MIT</em></h3>
-            <p>John McCarthy formula las funciones lambda, la recolección de basura automática y los árboles de datos simbólicos.</p>
+            <p>${esc(tr('wb.04.m2.desc'))}</p>
           </div>
-          <p class="body-text">El lenguaje que definió la inteligencia artificial y la programación funcional.</p>
+          <p class="body-text">${esc(tr('wb.04.m2.note'))}</p>
           <span class="t">1958</span>
           <i class="bar" aria-hidden="true"></i>
         </div>
@@ -314,9 +309,9 @@ function curriculumMilestonesMarkup(): string {
           <span class="k">03</span>
           <div>
             <h3>COBOL &amp; Grace Hopper <em>US NAVY</em></h3>
-            <p>El código escrito en prosa en inglés: el estándar que movió los bancos y transacciones del planeta.</p>
+            <p>${esc(tr('wb.04.m3.desc'))}</p>
           </div>
-          <p class="body-text">La invención del primer compilador de la historia (A-0) y la estandarización masiva.</p>
+          <p class="body-text">${esc(tr('wb.04.m3.note'))}</p>
           <span class="t">1959</span>
           <i class="bar" aria-hidden="true"></i>
         </div>
@@ -325,9 +320,9 @@ function curriculumMilestonesMarkup(): string {
           <span class="k">04</span>
           <div>
             <h3>C &amp; Unix <em>BELL LABS</em></h3>
-            <p>Dennis Ritchie y Ken Thompson crean el lenguaje universal que gobierna los sistemas operativos contemporáneos.</p>
+            <p>${esc(tr('wb.04.m4.desc'))}</p>
           </div>
-          <p class="body-text">El cimiento directo de Linux, macOS, Windows, Android e iOS.</p>
+          <p class="body-text">${esc(tr('wb.04.m4.note'))}</p>
           <span class="t">1972</span>
           <i class="bar" aria-hidden="true"></i>
         </div>
@@ -336,9 +331,9 @@ function curriculumMilestonesMarkup(): string {
           <span class="k">05</span>
           <div>
             <h3>Python &amp; La Era de la IA <em>GLOBAL</em></h3>
-            <p>Guido van Rossum prioriza la legibilidad humana. Décadas después, se convierte en la lengua franca del machine learning.</p>
+            <p>${esc(tr('wb.04.m5.desc'))}</p>
           </div>
-          <p class="body-text">El puente entre los algoritmos matemáticos y los modelos de frontera.</p>
+          <p class="body-text">${esc(tr('wb.04.m5.note'))}</p>
           <span class="t">1991–2026</span>
           <i class="bar" aria-hidden="true"></i>
         </div>
@@ -358,17 +353,18 @@ function curriculumMilestonesMarkup(): string {
  */
 function comparisonWorkbenchMarkup(): string {
   return `
-    <section class="scene" id="ch-comparison" data-section="ch-comparison" data-era="systems">
+    <section class="scene scene--workbench" id="ch-comparison" data-section="ch-comparison" data-era="systems">
+      <div class="diorama-monolith" aria-hidden="true">SYSTEMS</div>
       <div class="sec-head" data-rv>
-        <span class="k"><b>04.B</b> — Laboratorio de Sintaxis y Paradigmas</span>
+        <span class="k"><b>04.B</b> — ${esc(tr('wb.comp.tag'))}</span>
         <span class="rule"></span>
-        <span class="k">COMPARATIVA EN TIEMPO REAL</span>
+        <span class="k">${esc(tr('wb.comp.subtag'))}</span>
       </div>
 
       <div class="gate-grid" data-reveal style="margin-bottom: clamp(24px, 4vh, 48px);">
-        <h2 class="display display--md" data-rv>Un mismo problema, filosofías opuestas.</h2>
+        <h2 class="display display--md" data-rv>${esc(tr('wb.comp.head'))}</h2>
         <div class="gate-copy">
-          <p class="lead" data-rv>Compara cómo cada generación resolvió el mismo desafío lógico a través de distintos paradigmas: imperativo, orientado a objetos, funcional y moderno.</p>
+          <p class="lead" data-rv>${esc(tr('wb.comp.desc'))}</p>
         </div>
       </div>
 
@@ -381,14 +377,15 @@ function comparisonWorkbenchMarkup(): string {
 export function epilogueMarkup(): string {
   return `
     <section class="scene scene--center epilogue" id="epilogue" data-section="epilogue">
+      <div class="diorama-monolith diorama-monolith--hero" aria-hidden="true">CHRONICLES</div>
       <div class="fin" data-reveal>
         <div class="sec-head" style="justify-content: center; margin-bottom: 24px;" data-rv>
-          <span class="k"><b>EPÍLOGO</b> — EL VIAJE CONTINÚA</span>
+          <span class="k"><b>${tr('ct.epilogue.tag')}</b> — ${tr('ct.epilogue.subtag')}</span>
         </div>
-        <h2 class="display display--xl" data-rv>La historia de la programación<br/>todavía se sigue escribiendo.</h2>
-        <p class="body-text lede" style="max-width: 50ch; margin: 20px auto 0;" data-rv>Cada línea de código que compilas hoy está conectada con los telares de seda de 1801, las notas de Ada Lovelace de 1843 y la máquina universal de Turing de 1936. El próximo capítulo es nuestro.</p>
+        <h2 class="display display--xl" data-rv>${tr('ct.epilogue.head')}</h2>
+        <p class="body-text lede" style="max-width: 50ch; margin: 20px auto 0;" data-rv>${tr('ct.epilogue.body')}</p>
         <a class="cta-pill" href="#hero" data-rv>
-          <span>Volver al Umbral</span>
+          <span>${tr('ct.epilogue.back')}</span>
           <svg viewBox="0 0 14 14" fill="none" width="13" height="13"><path d="M7 11V3M3 7l4-4 4 4" stroke="currentColor" stroke-width="1.4"/></svg>
           <i aria-hidden="true"></i>
         </a>
@@ -401,22 +398,23 @@ export function epilogueMarkup(): string {
  */
 function chapterOopWorkbenchMarkup(): string {
   return `
-    <section class="scene" id="ch-06-workbench" data-section="ch-06-workbench" data-era="oop">
+    <section class="scene scene--workbench" id="ch-06-workbench" data-section="ch-06-workbench" data-era="oop">
+      <div class="diorama-monolith" aria-hidden="true">OBJECTS</div>
       <div class="sec-head" data-rv>
-        <span class="k"><b>06.B</b> — El Manifiesto de Xerox PARC &amp; La Biología del Software</span>
+        <span class="k"><b>06.B</b> — ${esc(tr('wb.06.tag'))}</span>
         <span class="rule"></span>
-        <span class="k">SMALLTALK-80 (1972–1980)</span>
+        <span class="k">${esc(tr('wb.06.subtag'))}</span>
       </div>
 
       <div class="gate-grid" data-reveal>
         <div>
-          <h3 class="display display--md" data-rv>Todo es un objeto. Todo se comunica por mensajes.</h3>
-          <p class="body-text" data-rv>En el Xerox Alto, Alan Kay y Adele Goldberg reemplazaron la noción tradicional de procedimientos separados de datos por entidades biológicas de software capaces de responder a mensajes. Observa el código original de Smalltalk-80:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.06.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.06.desc'))}</p>
           <div class="tcode" data-rv>
             <div class="tcode__bar">
               <span class="tcode__dots" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="tcode__file">chronicle_agent.st</span>
-              <button class="tcode__copy" data-copy type="button" aria-label="Copiar código">Copiar</button>
+              <button class="tcode__copy" data-copy type="button" aria-label="${esc(tr('ui.copy_code_aria'))}">${esc(tr('ui.copy'))}</button>
             </div>
             <pre class="tcode__body" aria-label="chronicle_agent.st">
 // Definición de clase en Smalltalk-80 (Xerox PARC)
@@ -436,14 +434,14 @@ jumpToEra: targetYear
         </div>
 
         <div>
-          <h3 class="display display--md" data-rv>El linaje de los objetos.</h3>
-          <p class="body-text" data-rv>Cómo la metáfora de las células autónomas se expandió por toda la industria del software:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.06.lineage.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.06.lineage.desc'))}</p>
           <div class="cur" data-rv>
             <div class="les">
               <span class="k">1967</span>
               <div>
                 <h3>Simula 67 <em>Dahl &amp; Nygaard</em></h3>
-                <p>Nace el concepto de clase, subclase y herencia para simular sistemas físicos.</p>
+                <p>${esc(tr('wb.06.l1.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -451,7 +449,7 @@ jumpToEra: targetYear
               <span class="k">1972</span>
               <div>
                 <h3>Smalltalk <em>Xerox PARC</em></h3>
-                <p>Pureza conceptual absoluta: enteros, ventanas y métodos son objetos que intercambian mensajes.</p>
+                <p>${esc(tr('wb.06.l2.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -459,7 +457,7 @@ jumpToEra: targetYear
               <span class="k">1985</span>
               <div>
                 <h3>C++ <em>Bjarne Stroustrup</em></h3>
-                <p>Clases agregadas a C: la potencia de los objetos sin ceder un milisegundo de rendimiento.</p>
+                <p>${esc(tr('wb.06.l3.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -467,7 +465,7 @@ jumpToEra: targetYear
               <span class="k">1995</span>
               <div>
                 <h3>Java <em>Sun Microsystems</em></h3>
-                <p>Tipado estático seguro, recolección de basura y ejecución universal con la máquina virtual JVM.</p>
+                <p>${esc(tr('wb.06.l4.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -482,22 +480,23 @@ jumpToEra: targetYear
  */
 function chapterWebWorkbenchMarkup(): string {
   return `
-    <section class="scene" id="ch-08-workbench" data-section="ch-08-workbench" data-era="web">
+    <section class="scene scene--workbench" id="ch-08-workbench" data-section="ch-08-workbench" data-era="web">
+      <div class="diorama-monolith" aria-hidden="true">1989</div>
       <div class="sec-head" data-rv>
-        <span class="k"><b>08.B</b> — El Hipertexto del CERN &amp; La Chispa de JavaScript</span>
+        <span class="k"><b>08.B</b> — ${esc(tr('wb.08.tag'))}</span>
         <span class="rule"></span>
-        <span class="k">1991 — 1995</span>
+        <span class="k">${esc(tr('wb.08.subtag'))}</span>
       </div>
 
       <div class="gate-grid" data-reveal>
         <div>
-          <h3 class="display display--md" data-rv>El documento original que conectó al planeta.</h3>
-          <p class="body-text" data-rv>Así lucía el código fuente de la primera página web montada por Tim Berners-Lee en el NeXT Computer del CERN en 1991. Una estructura modesta que transformó la civilización:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.08.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.08.desc'))}</p>
           <div class="tcode" data-rv>
             <div class="tcode__bar">
               <span class="tcode__dots" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="tcode__file">info.cern.ch_1991.html</span>
-              <button class="tcode__copy" data-copy type="button" aria-label="Copiar código">Copiar</button>
+              <button class="tcode__copy" data-copy type="button" aria-label="${esc(tr('ui.copy_code_aria'))}">${esc(tr('ui.copy'))}</button>
             </div>
             <pre class="tcode__body" aria-label="info.cern.ch_1991.html">
 &lt;HEADER&gt;
@@ -517,14 +516,14 @@ directly by pointers through this web of nodes.
         </div>
 
         <div>
-          <h3 class="display display--md" data-rv>De 10 días a motor omnipresente.</h3>
-          <p class="body-text" data-rv>La evolución del lenguaje que pasó de mover botones a ejecutar aplicaciones de escala astronómica:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.08.engine.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.08.engine.desc'))}</p>
           <div class="cur" data-rv>
             <div class="les">
               <span class="k">1995</span>
               <div>
                 <h3>Mocha / LiveScript <em>Brendan Eich</em></h3>
-                <p>Creado en 10 días para Netscape Navigator 2.0; combinó la sintaxis de Java con el alma funcional de Scheme.</p>
+                <p>${esc(tr('wb.08.e1.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -532,7 +531,7 @@ directly by pointers through this web of nodes.
               <span class="k">2005</span>
               <div>
                 <h3>AJAX &amp; Web 2.0 <em>Jesse James Garrett</em></h3>
-                <p>Las páginas dejan de recargarse: intercambio de datos asíncrono en segundo plano (Gmail, Google Maps).</p>
+                <p>${esc(tr('wb.08.e2.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -540,7 +539,7 @@ directly by pointers through this web of nodes.
               <span class="k">2008</span>
               <div>
                 <h3>Motor V8 &amp; Node.js <em>Lars Bak &amp; Ryan Dahl</em></h3>
-                <p>Compilación JIT ultrarrápida: JavaScript sale del navegador y conquista los servidores de la nube.</p>
+                <p>${esc(tr('wb.08.e3.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -548,7 +547,7 @@ directly by pointers through this web of nodes.
               <span class="k">2012+</span>
               <div>
                 <h3>TypeScript <em>Anders Hejlsberg</em></h3>
-                <p>Tipado estático a escala sobre JavaScript: la base de las aplicaciones web más complejas de la historia.</p>
+                <p>${esc(tr('wb.08.e4.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -563,22 +562,23 @@ directly by pointers through this web of nodes.
  */
 function chapterAiWorkbenchMarkup(): string {
   return `
-    <section class="scene" id="ch-10-workbench" data-section="ch-10-workbench" data-era="ai">
+    <section class="scene scene--workbench" id="ch-10-workbench" data-section="ch-10-workbench" data-era="ai">
+      <div class="diorama-monolith" aria-hidden="true">NEURAL</div>
       <div class="sec-head" data-rv>
-        <span class="k"><b>10.B</b> — La Mecánica del Transformer &amp; La Síntesis de Código</span>
+        <span class="k"><b>10.B</b> — ${esc(tr('wb.10.tag'))}</span>
         <span class="rule"></span>
-        <span class="k">ATTENTION IS ALL YOU NEED (2017)</span>
+        <span class="k">${esc(tr('wb.10.subtag'))}</span>
       </div>
 
       <div class="gate-grid" data-reveal>
         <div>
-          <h3 class="display display--md" data-rv>La fórmula que enseñó a las máquinas a razonar sintaxis.</h3>
-          <p class="body-text" data-rv>El mecanismo de auto-atención escalada (Scaled Dot-Product Attention) permite que un modelo pondere la relevancia de cada token respecto a todos los demás en una secuencia de código:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.10.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.10.desc'))}</p>
           <div class="tcode" data-rv>
             <div class="tcode__bar">
               <span class="tcode__dots" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="tcode__file">attention_mechanism.py</span>
-              <button class="tcode__copy" data-copy type="button" aria-label="Copiar código">Copiar</button>
+              <button class="tcode__copy" data-copy type="button" aria-label="${esc(tr('ui.copy_code_aria'))}">${esc(tr('ui.copy'))}</button>
             </div>
             <pre class="tcode__body" aria-label="attention_mechanism.py">
 # Cálculo de Atención en Transformers (Vaswani et al., 2017)
@@ -597,14 +597,14 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
         </div>
 
         <div>
-          <h3 class="display display--md" data-rv>La evolución de la mente sintáctica.</h3>
-          <p class="body-text" data-rv>Hitos que transformaron el cálculo numérico en comprensión de software:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.10.mind.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.10.mind.desc'))}</p>
           <div class="cur" data-rv>
             <div class="les">
               <span class="k">1958</span>
               <div>
                 <h3>Perceptrón <em>Frank Rosenblatt</em></h3>
-                <p>El primer modelo de red neuronal artificial inspirado en la sinapsis biológica cerebral.</p>
+                <p>${esc(tr('wb.10.m1.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -612,7 +612,7 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
               <span class="k">1986</span>
               <div>
                 <h3>Backpropagation <em>Hinton, Rumelhart, Williams</em></h3>
-                <p>El algoritmo de propagación hacia atrás del gradiente que permitió entrenar redes multicapa.</p>
+                <p>${esc(tr('wb.10.m2.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -620,7 +620,7 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
               <span class="k">2017</span>
               <div>
                 <h3>Transformer <em>Vaswani et al. (Google Brain)</em></h3>
-                <p>Abandono de la recurrencia: atención paralela sobre secuencias arbitrariamente largas.</p>
+                <p>${esc(tr('wb.10.m3.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -628,7 +628,7 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
               <span class="k">2021+</span>
               <div>
                 <h3>Modelos de Código <em>Codex, Copilot, Claude</em></h3>
-                <p>La programación asistida: el código como diálogo continuo entre humanos y modelos de frontera.</p>
+                <p>${esc(tr('wb.10.m4.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -643,22 +643,23 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
  */
 function chapterFutureWorkbenchMarkup(): string {
   return `
-    <section class="scene" id="ch-11-workbench" data-section="ch-11-workbench" data-era="future">
+    <section class="scene scene--workbench" id="ch-11-workbench" data-section="ch-11-workbench" data-era="future">
+      <div class="diorama-monolith" aria-hidden="true">QUANTUM</div>
       <div class="sec-head" data-rv>
-        <span class="k"><b>11.B</b> — El Oráculo Cuántico &amp; Las Nuevas Fronteras</span>
+        <span class="k"><b>11.B</b> — ${esc(tr('wb.11.tag'))}</span>
         <span class="rule"></span>
-        <span class="k">HORIZONTE ESPECULATIVO</span>
+        <span class="k">${esc(tr('wb.11.subtag'))}</span>
       </div>
 
       <div class="gate-grid" data-reveal>
         <div>
-          <h3 class="display display--md" data-rv>El algoritmo que habita en superposición.</h3>
-          <p class="body-text" data-rv>En computación cuántica, un qubit no es un cero o un uno, sino una esfera de Bloch de infinitas probabilidades continuas. Observa la preparación del estado de Bell en lenguaje Q#:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.11.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.11.desc'))}</p>
           <div class="tcode" data-rv>
             <div class="tcode__bar">
               <span class="tcode__dots" aria-hidden="true"><i></i><i></i><i></i></span>
               <span class="tcode__file">entanglement_bell.qs</span>
-              <button class="tcode__copy" data-copy type="button" aria-label="Copiar código">Copiar</button>
+              <button class="tcode__copy" data-copy type="button" aria-label="${esc(tr('ui.copy_code_aria'))}">${esc(tr('ui.copy'))}</button>
             </div>
             <pre class="tcode__body" aria-label="entanglement_bell.qs">
 // Preparación de Entrelazamiento Cuántico en Q#
@@ -672,38 +673,38 @@ operation PrepareBellPair(q0 : Qubit, q1 : Qubit) : Unit is Adj + Ctl {
         </div>
 
         <div>
-          <h3 class="display display--md" data-rv>Los cuatro dilemas de lo que vendrá.</h3>
-          <p class="body-text" data-rv>Preguntas fundamentales que definirán el software de la próxima generación:</p>
+          <h3 class="display display--md" data-rv>${esc(tr('wb.11.dilemmas.head'))}</h3>
+          <p class="body-text" data-rv>${esc(tr('wb.11.dilemmas.desc'))}</p>
           <div class="cur" data-rv>
             <div class="les">
               <span class="k">01</span>
               <div>
-                <h3>Criptografía Post-Cuántica <em>Resistencia al algoritmo de Shor</em></h3>
-                <p>Reescribir la seguridad bancaria y de comunicaciones antes de que los qubits rompan el cifrado RSA.</p>
+                <h3>${esc(tr('wb.11.d1.title'))} <em>${esc(tr('wb.11.d1.sub'))}</em></h3>
+                <p>${esc(tr('wb.11.d1.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
             <div class="les">
               <span class="k">02</span>
               <div>
-                <h3>Verificación Formal de IA <em>Garantías matemáticas inmutables</em></h3>
-                <p>Pruebas de corrección lógica para agentes autónomos que toman decisiones en tiempo real.</p>
+                <h3>${esc(tr('wb.11.d2.title'))} <em>${esc(tr('wb.11.d2.sub'))}</em></h3>
+                <p>${esc(tr('wb.11.d2.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
             <div class="les">
               <span class="k">03</span>
               <div>
-                <h3>Almacenamiento en ADN <em>Densidad molecular extrema</em></h3>
-                <p>Guardar todos los repositorios de código de la humanidad en unos gramos de material biológico durante milenios.</p>
+                <h3>${esc(tr('wb.11.d3.title'))} <em>${esc(tr('wb.11.d3.sub'))}</em></h3>
+                <p>${esc(tr('wb.11.d3.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
             <div class="les">
               <span class="k">04</span>
               <div>
-                <h3>El Lenguaje Humano como Código <em>La interfaz definitiva</em></h3>
-                <p>¿Seguiremos escribiendo sintaxis formal o la arquitectura del pensamiento abstracto será la única herramienta?</p>
+                <h3>${esc(tr('wb.11.d4.title'))} <em>${esc(tr('wb.11.d4.sub'))}</em></h3>
+                <p>${esc(tr('wb.11.d4.desc'))}</p>
               </div>
               <i class="bar" aria-hidden="true"></i>
             </div>
@@ -713,122 +714,97 @@ operation PrepareBellPair(q0 : Qubit, q1 : Qubit) : Unit is Adj + Ctl {
     </section>`;
 }
 
-function chapterStats(ch: ChapterMeta): Array<{ val: string; label: string }> {
+function chapterStats(ch: ChapterMeta): Array<{ val: string; label: string; labelKey: string }> {
   switch (ch.id) {
     case 'ch-01-before-code':
       return [
-        { val: '1843', label: 'Primer Algoritmo' },
-        { val: '24,000', label: 'Engranajes de Bronce' },
-        { val: 'Nota G', label: 'Manuscrito Original' },
-        { val: '∞', label: 'Legado Vivo' },
+        { val: '1843', label: 'Primer Algoritmo', labelKey: 'stat.first.algorithm' },
+        { val: '24,000', label: 'Engranajes de Bronce', labelKey: 'stat.bronze.gears' },
+        { val: 'Nota G', label: 'Manuscrito Original', labelKey: 'stat.original.manuscript' },
+        { val: '∞', label: 'Legado Vivo', labelKey: 'stat.living.legacy' },
       ];
     case 'ch-02-machines':
       return [
-        { val: '1936', label: 'Máquina Universal' },
-        { val: '2,400', label: 'Relés Zuse Z3' },
-        { val: '5,000 c/s', label: 'Lectura Colossus' },
-        { val: 'Binario', label: 'Lógica Booleana' },
+        { val: '1936', label: 'Máquina Universal', labelKey: 'stat.universal.machine' },
+        { val: '2,400', label: 'Relés Zuse Z3', labelKey: 'stat.zuse.relays' },
+        { val: '5,000 c/s', label: 'Lectura Colossus', labelKey: 'stat.colossus.read' },
+        { val: 'Binario', label: 'Lógica Booleana', labelKey: 'stat.boolean.logic' },
       ];
     case 'ch-03-computers':
       return [
-        { val: '1945', label: 'ENIAC Operativo' },
-        { val: '18,000', label: 'Válvulas de Vacío' },
-        { val: 'von Neumann', label: 'Arquitectura' },
-        { val: '167 m²', label: 'Superficie' },
+        { val: '1945', label: 'ENIAC Operativo', labelKey: 'stat.eniac.operational' },
+        { val: '18,000', label: 'Válvulas de Vacío', labelKey: 'stat.vacuum.tubes' },
+        { val: 'von Neumann', label: 'Arquitectura', labelKey: 'stat.vonneumann.arch' },
+        { val: '167 m²', label: 'Superficie', labelKey: 'stat.surface' },
       ];
     case 'ch-04-languages':
       return [
-        { val: '1957', label: 'Fortran I' },
-        { val: 'A-0', label: 'Primer Compilador' },
-        { val: 'COBOL', label: 'Estándar Global' },
-        { val: 'Lisp', label: 'Cálculo Lambda' },
+        { val: '1957', label: 'Fortran I', labelKey: 'stat.fortran.one' },
+        { val: 'A-0', label: 'Primer Compilador', labelKey: 'stat.first.compiler' },
+        { val: 'COBOL', label: 'Estándar Global', labelKey: 'stat.global.standard' },
+        { val: 'Lisp', label: 'Cálculo Lambda', labelKey: 'stat.lambda.calculus' },
       ];
     case 'ch-05-systems':
       return [
-        { val: '1972', label: 'Nacimiento de C' },
-        { val: 'Unix', label: 'Filosofía Modular' },
-        { val: 'PDP-11', label: 'Hardware Clave' },
-        { val: 'POSIX', label: 'Estándar Universal' },
+        { val: '1972', label: 'Nacimiento de C', labelKey: 'stat.birth.c' },
+        { val: 'Unix', label: 'Filosofía Modular', labelKey: 'stat.modular.philosophy' },
+        { val: 'PDP-11', label: 'Hardware Clave', labelKey: 'stat.key.hardware' },
+        { val: 'POSIX', label: 'Estándar Universal', labelKey: 'stat.uni.std' },
       ];
     case 'ch-06-oop':
       return [
-        { val: '1972', label: 'Nacimiento Smalltalk' },
-        { val: 'Xerox PARC', label: 'Cuna de la GUI' },
-        { val: 'C++', label: 'Stroustrup (1985)' },
-        { val: 'Objetos', label: 'Paradigma Vivo' },
+        { val: '1972', label: 'Nacimiento Smalltalk', labelKey: 'stat.birth.smalltalk' },
+        { val: 'Xerox PARC', label: 'Cuna de la GUI', labelKey: 'stat.gui.cradle' },
+        { val: 'C++', label: 'Stroustrup (1985)', labelKey: 'stat.stroustrup' },
+        { val: 'Objetos', label: 'Paradigma Vivo', labelKey: 'stat.living.paradigm' },
       ];
     case 'ch-07-modern':
       return [
-        { val: '1991', label: 'Python de Guido' },
-        { val: '1995', label: 'Java & la JVM' },
-        { val: '+700', label: 'Lenguajes Vivos' },
-        { val: 'Open Source', label: 'Revolución Global' },
+        { val: '1991', label: 'Python de Guido', labelKey: 'stat.guido.python' },
+        { val: '1995', label: 'Java & la JVM', labelKey: 'stat.java.jvm' },
+        { val: '+700', label: 'Lenguajes Vivos', labelKey: 'stat.living.languages' },
+        { val: 'Open Source', label: 'Revolución Global', labelKey: 'stat.global.revolution' },
       ];
     case 'ch-08-web':
       return [
-        { val: '1989', label: 'Tim Berners-Lee' },
-        { val: '10 Días', label: 'Génesis de JS' },
-        { val: '5.4B', label: 'Personas en Línea' },
-        { val: 'V8 / Web', label: 'Plataforma Global' },
+        { val: '1989', label: 'Tim Berners-Lee', labelKey: 'stat.tbl' },
+        { val: '10 Días', label: 'Génesis de JS', labelKey: 'stat.js.genesis' },
+        { val: '5.4B', label: 'Personas en Línea', labelKey: 'stat.online.people' },
+        { val: 'V8 / Web', label: 'Plataforma Global', labelKey: 'stat.global.platform' },
       ];
     case 'ch-09-systems':
       return [
-        { val: '2009', label: 'Go en Google' },
-        { val: '2010', label: 'Rust y Safety' },
-        { val: '0 Races', label: 'Borrow Checker' },
-        { val: 'Concurrencia', label: 'Escala Masiva' },
+        { val: '2009', label: 'Go en Google', labelKey: 'stat.go.google' },
+        { val: '2010', label: 'Rust y Safety', labelKey: 'stat.rust.safety' },
+        { val: '0 Races', label: 'Borrow Checker', labelKey: 'stat.borrow.checker' },
+        { val: 'Concurrencia', label: 'Escala Masiva', labelKey: 'stat.massive.scale' },
       ];
     case 'ch-10-ai':
       return [
-        { val: '2012', label: 'Revolución Deep Learning' },
-        { val: '2017', label: 'Atención / Transformer' },
-        { val: 'Trillones', label: 'Parámetros' },
-        { val: 'Copilot', label: 'Síntesis Asistida' },
+        { val: '2012', label: 'Revolución Deep Learning', labelKey: 'stat.deep.learning' },
+        { val: '2017', label: 'Atención / Transformer', labelKey: 'stat.transformer' },
+        { val: 'Trillones', label: 'Parámetros', labelKey: 'stat.parameters' },
+        { val: 'Copilot', label: 'Síntesis Asistida', labelKey: 'stat.assisted.synthesis' },
       ];
     case 'ch-11-future':
       return [
-        { val: '53 Qubits', label: 'Supremacía Cuántica' },
-        { val: '|0⟩ + |1⟩', label: 'Superposición' },
-        { val: 'AGI', label: 'Horizonte Teórico' },
-        { val: '∞', label: 'El Próximo Capítulo' },
+        { val: '53 Qubits', label: 'Supremacía Cuántica', labelKey: 'stat.quantum.supremacy' },
+        { val: '|0⟩ + |1⟩', label: 'Superposición', labelKey: 'stat.superposition' },
+        { val: 'AGI', label: 'Horizonte Teórico', labelKey: 'stat.theoretical.horizon' },
+        { val: '∞', label: 'El Próximo Capítulo', labelKey: 'stat.next.chapter' },
       ];
     default:
       return [
-        { val: ch.yearLabel, label: 'Época' },
-        { val: String(ch.number).padStart(2, '0'), label: 'Capítulo' },
-        { val: SIDE_LABELS[ch.era] ?? ch.era, label: 'Dominio' },
-        { val: 'Activo', label: 'Estado' },
+        { val: ch.yearLabel, label: 'Época', labelKey: 'stat.epoch' },
+        { val: String(ch.number).padStart(2, '0'), label: 'Capítulo', labelKey: 'stat.chapter' },
+        { val: getSideLabel(ch.era), label: 'Dominio', labelKey: 'stat.domain' },
+        { val: tr('stat.active'), label: 'Estado', labelKey: 'stat.state' },
       ];
   }
 }
 
 function chapterExtraNarrative(ch: ChapterMeta): string {
-  switch (ch.id) {
-    case 'ch-01-before-code':
-      return 'Lovelace vio más allá del cálculo aritmético: intuyó que cualquier relación simbólica —música, imágenes, lógica— podía manipularse si una máquina seguía las reglas adecuadas.';
-    case 'ch-02-machines':
-      return 'Los relés electromagnéticos abrían y cerraban circuitos en milisegundos, convirtiendo la matemática booleana en corriente física medible y dando vida a la primera computación programable.';
-    case 'ch-03-computers':
-      return 'Las computadoras electrónicas sustituyeron la inercia mecánica por el flujo de electrones a través de tubos de vacío, multiplicando por diez mil la velocidad de cómputo y dando origen a la ingeniería de software con misiones críticas como el Apolo.';
-    case 'ch-04-languages':
-      return 'Los compiladores democratizaron la programación: ya no era necesario memorizar secuencias binarias en tarjetas perforadas; el pensamiento abstracto y la notación matemática se convertían directamente en software ejecutable.';
-    case 'ch-05-systems':
-      return 'La filosofía de Unix —pequeños programas que hacen una sola cosa y se combinan entre sí mediante tuberías— junto a la precisión de C, estableció el contrato arquitectónico que gobierna la infraestructura de la civilización.';
-    case 'ch-06-oop':
-      return 'En Xerox PARC, Alan Kay y su equipo concibieron el software como una biología digital de células autónomas que se comunican intercambiando mensajes. De este salto nacieron las ventanas, el ratón, los iconos y el paradigma de objetos que modeló el software moderno.';
-    case 'ch-07-modern':
-      return 'La década de 1990 presenció la explosión cámbrica del código: lenguajes diseñados para la productividad humana, la portabilidad absoluta entre arquitecturas (la JVM de Java) y la expresividad elegante (Python, Ruby) democratizaron la creación de software en todo el mundo.';
-    case 'ch-08-web':
-      return 'Concebida en el CERN para enlazar documentos científicos estáticos, la World Wide Web mutó en el sistema operativo global de la humanidad. JavaScript, creado por Brendan Eich en apenas diez días de mayo de 1995, se convirtió en el lenguaje más ejecutado del planeta.';
-    case 'ch-09-systems':
-      return 'Frente a centros de datos a escala planetaria y procesadores con decenas de núcleos, la industria demandó un nuevo rigor: Go simplificó la concurrencia en la nube con goroutines ligeras, mientras Rust erradicó las vulnerabilidades de memoria sin necesidad de un recolector de basura.';
-    case 'ch-10-ai':
-      return 'El código ha dejado de ser exclusivamente una redacción humana artesanal. Las redes neuronales profundas y la arquitectura Transformer comprenden patrones semánticos complejos, permitiendo que humanos y máquinas dialoguen en lenguaje natural para sintetizar software en tiempo real.';
-    case 'ch-11-future':
-      return 'Desde procesadores cuánticos que operan en superposición y entrelazamiento hasta la verificación formal de software crítico y la computación biológica, la frontera del código se prepara para resolver preguntas que hasta hoy considerábamos imposibles.';
-    default:
-      return 'Cada avance en los lenguajes de programación ha sido un paso más para acercar la intención humana a la ejecución del silicio.';
-  }
+  return tr(`ct.narr.${ch.id}`);
 }
 
 function getChapterCharacter(ch: ChapterMeta) {
@@ -926,5 +902,15 @@ export function renderChronicles(): string {
   });
 
   sections.push(epilogueMarkup());
-  return sections.join('\n');
+
+  return `
+    <div class="timeline-ribbon" id="timeline-ribbon">
+      <div class="timeline-ribbon-spine" id="timeline-ribbon-spine" aria-hidden="true">
+        <div class="timeline-ribbon-spine__line"></div>
+        <div class="timeline-ribbon-spine__cursor" id="timeline-ribbon-cursor"></div>
+      </div>
+      <div class="timeline-ribbon-track" id="timeline-ribbon-track">
+        ${sections.join('\n')}
+      </div>
+    </div>`;
 }

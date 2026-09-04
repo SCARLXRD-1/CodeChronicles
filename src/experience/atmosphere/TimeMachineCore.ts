@@ -325,7 +325,7 @@ export class TimeMachineCore {
     this.vortexMat = new THREE.MeshBasicMaterial({
       map: this.vortexTex,
       transparent: true,
-      opacity: 0.38,
+      opacity: 0.18,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
@@ -361,19 +361,19 @@ export class TimeMachineCore {
       map: haloTex,
       color: this.currentColor,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.50,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     this.coreHalo = new THREE.Mesh(haloGeo, this.haloMat);
     this.coreHalo.position.z = -45.5;
 
-    // Luz puntual que emana desde la singularidad hacia adelante
-    this.coreLight = new THREE.PointLight(0xc9a24a, 2.5, 60, 1.2);
+    // Luz puntual que emana desde la singularidad hacia adelante (calibrada para no quemar)
+    this.coreLight = new THREE.PointLight(0xc9a24a, 1.6, 50, 1.2);
     this.coreLight.position.z = -40;
 
     // Luz frontal que baña directamente los aros giroscópicos y sus graduaciones
-    this.dialFrontLight = new THREE.PointLight(0xffeedd, 2.2, 35, 0.8);
+    this.dialFrontLight = new THREE.PointLight(0xffeedd, 1.4, 30, 0.8);
     this.dialFrontLight.position.set(0, 2, 8);
 
     this.group.add(this.coreMesh, this.coreHalo, this.coreLight, this.dialFrontLight);
@@ -408,43 +408,45 @@ export class TimeMachineCore {
     this.speedSmoothed = damp(this.speedSmoothed, speedVal, 3.8, dt);
     const speedBoost = 1 + this.speedSmoothed * 11.5 + warp * 7.5;
 
-    // 1. Contra-rotación giroscópica de los aros con precesión 3D reactiva al scroll
-    this.ring1.rotation.z += this.rotationSpeed1 * speedBoost * dt;
+    // 1. Giro cronométrico acoplado en sincronía directa con el avance de la cinta temporal
+    // Cada movimiento de la cinta hace girar los diales como los engranajes de un reloj maestro
+    const ribbonChronoAngle = snapProgress * Math.PI * 18;
+    this.ring1.rotation.z = ribbonChronoAngle + t * this.rotationSpeed1 * speedBoost;
     this.ring1.rotation.x = 0.2 + Math.sin(t * 0.5) * 0.08 + this.speedSmoothed * 0.45;
-    this.ring1.rotation.y = Math.cos(t * 0.35) * 0.06 + this.speedSmoothed * 0.25;
+    this.ring1.rotation.y = Math.cos(t * 0.35) * 0.06 + (snapProgress - 0.5) * -0.5;
 
-    this.ring2.rotation.z += this.rotationSpeed2 * speedBoost * dt;
-    this.ring2.rotation.y = Math.cos(t * 0.4) * 0.12 - this.speedSmoothed * 0.4;
+    this.ring2.rotation.z = -ribbonChronoAngle * 0.72 + t * this.rotationSpeed2 * speedBoost;
+    this.ring2.rotation.y = Math.cos(t * 0.4) * 0.12 - this.speedSmoothed * 0.4 + (snapProgress - 0.5) * 0.4;
     this.ring2.rotation.x = Math.sin(t * 0.6) * 0.08 + this.speedSmoothed * 0.3;
 
-    this.ring3.rotation.z += this.rotationSpeed3 * speedBoost * dt;
+    this.ring3.rotation.z = ribbonChronoAngle * 1.35 + t * this.rotationSpeed3 * speedBoost;
     this.ring3.rotation.x = -0.15 + Math.sin(t * 0.7) * 0.1 + this.speedSmoothed * 0.55;
     this.ring3.rotation.y = Math.sin(t * 0.5) * 0.09 - this.speedSmoothed * 0.35;
 
-    // 2. Desplazamiento del flujo del vórtice (sensación de vuelo temporal infinito)
+    // 2. Desplazamiento del flujo del vórtice acoplado a la cinta del tiempo
     if (this.vortexTex) {
-      const scrollFlow = dt * (0.8 + this.speedSmoothed * 7.5 + warp * 5.5);
-      this.vortexTex.offset.y = (this.vortexTex.offset.y + scrollFlow) % 1;
-      this.vortexTex.offset.x = (this.vortexTex.offset.x + dt * 0.08 + this.speedSmoothed * 0.25) % 1;
+      // El flujo avanza con el progreso de la cinta más el impulso de velocidad
+      this.vortexTex.offset.y = (snapProgress * 8.0 + t * 0.05) % 1;
+      this.vortexTex.offset.x = (snapProgress * 3.5 + t * 0.02) % 1;
     }
 
     // Respiración del vórtice
     const pulse = Math.sin(t * 2.2) * 0.05 + 1.0 + this.speedSmoothed * 0.28;
     this.vortexMesh.scale.set(pulse, pulse, 1);
     this.vortexMat.opacity = THREE.MathUtils.lerp(
-      0.40,
-      0.96,
-      Math.min(1, this.speedSmoothed * 2.2 + warp * 1.2),
+      0.18,
+      0.42,
+      Math.min(1, this.speedSmoothed * 1.5 + warp * 0.8),
     );
 
     // 3. Pulsación de la singularidad
     const corePulse = 1.0 + Math.sin(t * 4.0) * 0.15 + warp * 0.5 + this.speedSmoothed * 0.4;
     this.coreMesh.scale.setScalar(corePulse);
     this.coreHalo.scale.setScalar(1.0 + Math.sin(t * 1.8) * 0.14 + warp * 0.8 + this.speedSmoothed * 0.6);
-    this.haloMat.opacity = THREE.MathUtils.lerp(0.55, 0.98, warp + this.speedSmoothed);
-    this.coreLight.intensity = THREE.MathUtils.lerp(3.2, 11.5, warp + this.speedSmoothed * 1.8);
+    this.haloMat.opacity = THREE.MathUtils.lerp(0.35, 0.75, warp + this.speedSmoothed);
+    this.coreLight.intensity = THREE.MathUtils.lerp(1.6, 4.2, warp + this.speedSmoothed * 1.2);
     if (this.dialFrontLight) {
-      this.dialFrontLight.intensity = THREE.MathUtils.lerp(2.2, 6.0, this.speedSmoothed + warp * 0.5);
+      this.dialFrontLight.intensity = THREE.MathUtils.lerp(1.4, 3.2, this.speedSmoothed + warp * 0.5);
     }
 
     // 4. Interpolación suave de color según la era actual
@@ -463,7 +465,9 @@ export class TimeMachineCore {
     this.haloMat.color.copy(this.currentColor);
     this.coreLight.color.copy(this.currentColor);
 
-    // 5. Acercamiento dinámico según el scroll global + impulso
+    // 5. Posicionamiento horizontal y profundidad en sincronía con la cinta temporal
+    // El reloj de Chronos acompaña el viaje horizontal con parallax armónico
+    this.group.position.x = -1.2 + (snapProgress - 0.5) * -6.0;
     this.group.position.z = -8 - snapProgress * 3.5 + this.speedSmoothed * 1.6;
   }
 

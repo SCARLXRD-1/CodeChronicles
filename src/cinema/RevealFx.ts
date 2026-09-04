@@ -77,6 +77,19 @@ export class RevealFx {
     h.appendChild(mask);
   }
 
+  rescan() {
+    this.io.disconnect();
+    this.scan();
+    const vh = window.innerHeight;
+    this.scope.querySelectorAll<HTMLElement>('.rv').forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < vh && rect.bottom > 0) {
+        el.classList.add('rv-in');
+        this.io.unobserve(el);
+      }
+    });
+  }
+
   dispose() {
     this.io.disconnect();
     this.scope

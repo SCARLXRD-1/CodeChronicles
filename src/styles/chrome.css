@@ -318,6 +318,129 @@
   }
 }
 
+/* ---------- Selector de idioma ---------- */
+.lang-switcher {
+  position: relative;
+  pointer-events: auto;
+}
+
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 2.4rem;
+  height: 2.25rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 9999px;
+  background: rgba(10, 14, 18, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--color-paper-dim);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: var(--transition-token);
+}
+
+.lang-btn:hover {
+  color: var(--color-paper);
+  border-color: var(--color-paper-faint);
+}
+
+.lang-btn__code {
+  font-variant-numeric: tabular-nums;
+}
+
+.lang-btn__chev {
+  color: var(--color-paper-faint);
+  transition: transform 0.25s var(--ease);
+}
+
+.lang-btn[aria-expanded='true'] .lang-btn__chev {
+  transform: rotate(180deg);
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 40;
+  min-width: 11rem;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: rgba(13, 18, 24, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), visibility 0.2s;
+}
+
+.lang-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.lang-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-paper-dim);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition-token);
+}
+
+.lang-menu__item:hover {
+  background: rgba(223, 231, 224, 0.08);
+  color: var(--color-paper);
+}
+
+.lang-menu__item.is-active {
+  color: var(--ch-accent, var(--color-paper));
+  background: rgba(201, 162, 74, 0.1);
+}
+
+.lang-menu__code {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.lang-menu__name {
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .lang-btn {
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    justify-content: center;
+    padding: 0;
+  }
+  .lang-btn__chev {
+    display: none;
+  }
+}
+
 /* ---------- Touch: ocultar rail ---------- */
 @media (hover: none), (max-width: 640px) {
   .rail {

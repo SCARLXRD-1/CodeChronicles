@@ -1,6 +1,7 @@
 import { languages } from '../data/languages';
 import { esc } from '../content/ChroniclesContent';
 import type { LanguageEntry } from '../data/types';
+import { tr } from '../i18n';
 
 /**
  * LanguageComparison — FASE 6
@@ -94,16 +95,18 @@ function highlightLine(line: string): string {
 
 function codeCard(l: LanguageEntry | undefined, side: 'a' | 'b'): string {
   if (!l) {
-    return `<div class="compare__card" data-side="${side}"><p class="meta">Selecciona un lenguaje</p></div>`;
+    return `<div class="compare__card" data-side="${side}"><p class="meta">${esc(tr('ui.compare.select_prompt'))}</p></div>`;
   }
   const ext = fileExtension(l.id);
-  const rawCode = l.codeSample ?? '// sin código disponible';
+  const rawCode = l.codeSample ?? tr('ui.no_code');
+  const copyAria = tr('ui.compare.copy_aria').replace('{name}', l.name);
+  const note = tr(`card.lang.${l.id}.context`) || l.problemSolved;
 
   return `
     <div class="compare__card" data-side="${side}">
       <div class="compare__card-head">
         <div class="compare__title-group">
-          <span class="compare__era-badge">${esc(l.era.replace(/-/g, ' '))}</span>
+          <span class="compare__era-badge">${esc(tr(`era.${l.era}`) || l.era.replace(/-/g, ' '))}</span>
           <h4 class="compare__name">${esc(l.name)}</h4>
         </div>
         <div class="compare__meta-badge">
@@ -116,14 +119,14 @@ function codeCard(l: LanguageEntry | undefined, side: 'a' | 'b'): string {
         <div class="tcode__bar">
           <span class="tcode__dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="tcode__file">${esc(l.name.toLowerCase())}.${ext}</span>
-          <button class="tcode__copy" type="button" data-copy-text="${esc(rawCode)}" aria-label="Copiar código de ${esc(l.name)}">Copiar</button>
+          <button class="tcode__copy" type="button" data-copy-text="${esc(rawCode)}" aria-label="${esc(copyAria)}">${esc(tr('ui.copy'))}</button>
         </div>
         <pre class="tcode__body" tabindex="0">${highlightSyntax(rawCode)}<span class="tcode__caret" aria-hidden="true"></span></pre>
       </div>
 
       <div class="compare__problem">
-        <span class="compare__problem-label">Propósito / Problema que resolvió</span>
-        <p class="compare__note">${esc(l.problemSolved)}</p>
+        <span class="compare__problem-label">${esc(tr('ui.compare.purpose'))}</span>
+        <p class="compare__note">${esc(note)}</p>
       </div>
     </div>`;
 }
@@ -135,12 +138,12 @@ export function comparisonMarkup(): string {
     <div class="compare" data-compare>
       <div class="compare__controls">
         <label>
-          <span>Primer Lenguaje (A)</span>
+          <span>${esc(tr('ui.compare.lang_a'))}</span>
           <select class="compare__select" data-compare-select="a">${languageOptions(first.id)}</select>
         </label>
-        <div class="compare__versus">FRENTE A</div>
+        <div class="compare__versus">${esc(tr('ui.compare.versus'))}</div>
         <label>
-          <span>Segundo Lenguaje (B)</span>
+          <span>${esc(tr('ui.compare.lang_b'))}</span>
           <select class="compare__select" data-compare-select="b">${languageOptions(second.id)}</select>
         </label>
       </div>
@@ -167,14 +170,14 @@ export function bindComparison(container: HTMLElement) {
         try {
           await navigator.clipboard.writeText(text);
           const orig = btn.textContent;
-          btn.textContent = '¡Copiado!';
+          btn.textContent = tr('ui.copied');
           btn.classList.add('is-copied');
           setTimeout(() => {
             btn.textContent = orig;
             btn.classList.remove('is-copied');
           }, 2000);
         } catch {
-          btn.textContent = 'Listo';
+          btn.textContent = tr('ui.copy_done');
         }
       });
     });

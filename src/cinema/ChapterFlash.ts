@@ -1,4 +1,5 @@
 import type { ChapterMeta } from '../data/chapters';
+import { tr } from '../i18n';
 
 /**
  * ChapterFlash
@@ -34,7 +35,7 @@ export class ChapterFlash {
     const label = this.el.querySelector<HTMLElement>('.flash__label')!;
     const year = this.el.querySelector<HTMLElement>('.flash__year')!;
     num.textContent = String(chapter.number).padStart(2, '0');
-    label.textContent = chapter.title;
+    label.textContent = tr(`ch.${chapter.id}.title`) || chapter.title;
     year.textContent = chapter.yearLabel ?? '';
     this.el.style.setProperty('--flash-accent', chapter.color);
     this.el.classList.remove('is-on');

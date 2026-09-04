@@ -6,6 +6,7 @@ import { getArtifact } from '../data/artifacts';
 import { getEvent } from '../data/events';
 import { sourceRegistry } from '../data/sources';
 import { esc } from '../content/ChroniclesContent';
+import { tr } from '../i18n';
 
 export type DiscoverKind =
   | 'character'
@@ -28,10 +29,9 @@ export class DiscoverySystem {
 
   constructor() {
     this.overlay = document.createElement('div');
-    this.overlay.className = 'discovery';
-    this.overlay.setAttribute('role', 'dialog');
-    this.overlay.setAttribute('aria-modal', 'true');
-    this.overlay.setAttribute('aria-label', 'Ficha histórica');
+    this.overlay.className = 'discovery-overlay discovery';
+    this.overlay.id = 'discovery-overlay';
+    this.overlay.setAttribute('aria-hidden', 'true');
     document.body.appendChild(this.overlay);
 
     this.overlay.addEventListener('click', (e) => {
@@ -49,34 +49,37 @@ export class DiscoverySystem {
     const data = this.resolve(refId);
     if (!data) return;
     this.overlay.innerHTML = `
-      <div class="discovery__panel">
-        <button class="discovery__close" aria-label="Cerrar">✕</button>
+      <div class="discovery__panel" role="dialog" aria-modal="true">
+        <button class="discovery__close" aria-label="${esc(tr('ui.menu.close'))}">✕</button>
         <div class="discovery__content">
           ${data.content}
           ${data.sourcesHtml}
         </div>
       </div>`;
+    this.overlay.setAttribute('aria-hidden', 'false');
     this.overlay.classList.add('is-open');
     this.onDiscover?.(refId, data.kind);
   }
 
   close() {
     this.overlay.classList.remove('is-open');
+    this.overlay.setAttribute('aria-hidden', 'true');
   }
 
   private sourcesHtml(refId: string): string {
     const sources = getSourcesFor(refId);
     if (sources.length === 0) return '';
     return `
-      <div class="sources">
+      <div class="discovery__sources">
         <p class="sources__label">Fuentes</p>
         ${sources
           .map(
             (s) => `
-            <div class="source-item">
-              <span>${esc(s.title)}</span>
-              ${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">visitar</a>` : ''}
-            </div>`,
+          <div class="source-item">
+            <p class="source-item__title">${esc(s.title)}</p>
+            ${s.note ? `<p class="source-item__meta">${esc(s.note)}</p>` : ''}
+            ${s.url ? `<a class="source-item__link" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">Ver fuente ↗</a>` : ''}
+          </div>`,
           )
           .join('\n')}
       </div>`;
@@ -87,49 +90,53 @@ export class DiscoverySystem {
     if (registryEntry) {
       if (registryEntry.kind === 'character') {
         const c = getCharacter(refId)!;
+        const prof = tr(`card.char.${c.id}.profession`) || c.profession;
+        const quote = tr(`card.char.${c.id}.quote`) || c.quote;
         return {
           kind: 'character',
           content: `
-            <p class="eyebrow eyebrow--accent">Figura histórica ${esc(c.representation)}</p>
+            <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.character'))} · ${esc(c.representation)}</p>
             <h2 class="display display--lg discovery__title">${esc(c.name)}</h2>
-            <p class="discovery__meta">${esc(c.years)}</p>
+            <p class="discovery__meta">${esc(c.years)} · ${esc(prof)}</p>
             <span class="rule rule--short" aria-hidden="true"></span>
             <p class="lede">${esc(c.contribution)}</p>
             <p class="discovery__body">${esc(c.description)}</p>
-            ${c.quote ? `<blockquote class="scene__quote">“${esc(c.quote)}”</blockquote>` : ''}
+            ${quote ? `<blockquote class="scene__quote">“${esc(quote)}”</blockquote>` : ''}
             <div class="tags">${c.related.map((r) => `<span class="tag">${esc(r)}</span>`).join('')}</div>`,
           sourcesHtml: this.sourcesHtml(refId),
         };
       }
       if (registryEntry.kind === 'language') {
         const l = getLanguage(refId)!;
+        const problem = tr(`card.lang.${l.id}.context`) || l.problemSolved;
         return {
           kind: 'language',
           content: `
-            <p class="eyebrow eyebrow--accent">Lenguaje · ${l.year}</p>
+            <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.language'))} · ${l.year}</p>
             <h2 class="display display--lg discovery__title">${esc(l.name)}</h2>
             <p class="discovery__meta">${esc(l.creators.join(', '))}</p>
             <span class="rule rule--short" aria-hidden="true"></span>
-            <p class="lede">${esc(l.problemSolved)}</p>
+            <p class="lede">${esc(problem)}</p>
             <p class="discovery__body">${esc(l.historicalContext)}</p>
             <div class="tags">
               ${l.paradigms.map((p) => `<span class="tag">${esc(p)}</span>`).join('')}
             </div>
-            ${l.influences.length ? `<div class="tags"><p class="sources__label">Influencias</p>${l.influences.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}
-            ${l.influenced.length ? `<div class="tags"><p class="sources__label">Influyó en</p>${l.influenced.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}`,
+            ${l.influences.length ? `<div class="tags"><p class="sources__label">${esc(tr('ui.influences'))}</p>${l.influences.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}
+            ${l.influenced.length ? `<div class="tags"><p class="sources__label">${esc(tr('ui.influenced'))}</p>${l.influenced.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}`,
           sourcesHtml: this.sourcesHtml(refId),
         };
       }
       if (registryEntry.kind === 'machine') {
         const m = getMachine(refId)!;
+        const desc = tr(`card.machine.${m.id}.desc`) || m.description;
         return {
           kind: 'machine',
           content: `
-            <p class="eyebrow eyebrow--accent">Máquina · ${m.year}</p>
+            <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.machine'))} · ${m.year}</p>
             <h2 class="display display--lg discovery__title">${esc(m.name)}</h2>
             <p class="discovery__meta">${esc(m.creator)} · ${esc(m.type)}</p>
             <span class="rule rule--short" aria-hidden="true"></span>
-            <p class="discovery__body">${esc(m.description)}</p>
+            <p class="discovery__body">${esc(desc)}</p>
             <ul class="discovery__body">
               ${m.technicalNotes.map((n) => `<li>${esc(n)}</li>`).join('')}
             </ul>`,
@@ -142,13 +149,15 @@ export class DiscoverySystem {
     // Eventos y artefactos (no indexados por kind, resolvemos directamente)
     const event = getEvent(refId);
     if (event) {
+      const eTitle = tr(`card.event.${event.id}.title`) || event.title;
+      const eDesc = tr(`card.event.${event.id}.desc`) || event.description;
       return {
         kind: 'event',
         content: `
-          <p class="eyebrow eyebrow--accent">Acontecimiento · ${event.year}</p>
-          <h2 class="display display--lg discovery__title">${esc(event.title)}</h2>
+          <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.event'))} · ${event.year}</p>
+          <h2 class="display display--lg discovery__title">${esc(eTitle)}</h2>
           <span class="rule rule--short" aria-hidden="true"></span>
-          <p class="discovery__body">${esc(event.description)}</p>`,
+          <p class="discovery__body">${esc(eDesc)}</p>`,
         sourcesHtml: this.sourcesHtml(refId),
       };
     }
@@ -157,7 +166,7 @@ export class DiscoverySystem {
       return {
         kind: 'artifact',
         content: `
-          <p class="eyebrow eyebrow--accent">Artefacto · ${artifact.year ?? ''} ${esc(artifact.type)}</p>
+          <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.artifact'))} · ${artifact.year ?? ''} ${esc(artifact.type)}</p>
           <h2 class="display display--lg discovery__title">${esc(artifact.name)}</h2>
           <span class="rule rule--short" aria-hidden="true"></span>
           <p class="discovery__body">${esc(artifact.context)}</p>`,

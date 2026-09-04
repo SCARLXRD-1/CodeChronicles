@@ -60,18 +60,32 @@ export class ScrollDriver {
     this.measure();
   }
 
+  private manualProgress: number | null = null;
+  private manualPixels = 0;
+
+  public setProgress(progress: number, rawPixels = 0) {
+    this.manualProgress = Math.max(0, Math.min(1, progress));
+    this.manualPixels = rawPixels;
+  }
+
   snapshot(): ScrollSnapshot {
     if (this.documentHeight <= this.viewportHeight) {
       this.measure();
     }
     const max = Math.max(1, this.documentHeight - this.viewportHeight);
     const currY =
-      window.scrollY ||
-      window.pageYOffset ||
-      document.documentElement.scrollTop ||
-      document.body.scrollTop ||
-      this.scrollY;
-    const progress = this.reduceMotion ? 0 : Math.min(1, Math.max(0, currY / max));
+      this.manualProgress !== null
+        ? this.manualPixels
+        : window.scrollY ||
+          window.pageYOffset ||
+          document.documentElement.scrollTop ||
+          document.body.scrollTop ||
+          this.scrollY;
+    const progress = this.reduceMotion
+      ? 0
+      : this.manualProgress !== null
+        ? this.manualProgress
+        : Math.min(1, Math.max(0, currY / max));
     const scaled = progress * this.sections;
     const section = Math.min(this.sections - 1, Math.floor(scaled));
     const sectionProgress = scaled - Math.floor(scaled);

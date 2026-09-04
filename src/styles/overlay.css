@@ -4,24 +4,338 @@
    ============================================================ */
 
 #overlay {
-  position: relative;
-  z-index: 1;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 2;
   pointer-events: none;
 }
 
-#overlay > .scene,
-#overlay > .hero,
-#overlay > .epilogue {
+/* ---------- Cinta Cronológica Horizontal (Timeline Ribbon) ---------- */
+.timeline-ribbon {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+  perspective: 1150px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+
+.timeline-ribbon-spine {
+  position: fixed;
+  bottom: 1.25rem;
+  left: clamp(2rem, 5vw, 5rem);
+  right: clamp(2rem, 5vw, 5rem);
+  height: 20px;
+  z-index: 30;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-ribbon-spine__line {
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 162, 74, 0.25) 5%,
+    rgba(201, 162, 74, 0.85) 50%,
+    rgba(201, 162, 74, 0.25) 95%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(201, 162, 74, 0.4);
+}
+
+.timeline-ribbon-spine__cursor {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffd978;
+  box-shadow: 0 0 0 3px rgba(201, 162, 74, 0.35), 0 0 15px #ffd978;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  will-change: left;
+}
+
+.timeline-ribbon-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 100vh;
+  width: max-content;
+  will-change: transform;
   pointer-events: auto;
+  transform: translate3d(0, 0, 0);
+  transform-style: preserve-3d;
+}
+
+.timeline-ribbon-track > .hero,
+.timeline-ribbon-track > .scene,
+.timeline-ribbon-track > .epilogue {
+  height: 100vh;
+  max-height: 100vh;
+  width: clamp(84vw, 92vw, 1580px);
+  max-width: 1580px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3.5rem clamp(2rem, 3.5vw, 4.5rem) 4rem;
+  box-sizing: border-box;
+  position: relative;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+  will-change: transform, opacity;
+  transform:
+    translate3d(calc(var(--dist, 0) * -60px), 0, calc(var(--abs-dist, 0) * -380px))
+    rotateY(calc(var(--dist, 0) * -26deg))
+    rotateZ(calc(var(--dist, 0) * -1.6deg))
+    scale(calc(1 - var(--abs-dist, 0) * 0.1));
+  opacity: calc(1 - var(--abs-dist, 0) * 0.45);
+  transition: opacity 0.35s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-ribbon-track > .hero,
+  .timeline-ribbon-track > .scene,
+  .timeline-ribbon-track > .epilogue {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ---------- Monolito de Época (Capa Profunda translateZ -200px) ---------- */
+.diorama-monolith {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(calc(-50% + var(--dist, 0) * 180px), -50%) translateZ(-200px);
+  font-family: var(--font-display);
+  font-size: clamp(8rem, 20vw, 24rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.8;
+  color: var(--ch-accent, var(--gold, #c9a24a));
+  opacity: 0.065;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+  will-change: transform;
+  text-shadow: 0 0 90px var(--ch-accent, rgba(201, 162, 74, 0.45));
+  transform-style: preserve-3d;
+  transition: opacity 0.5s ease;
+}
+
+.diorama-monolith--hero {
+  font-size: clamp(5rem, 13vw, 15rem);
+  letter-spacing: 0.08em;
+  opacity: 0.045;
+}
+
+/* ---------- Diorama Espacial con Capas Sobrepuestas ---------- */
+.diorama-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.95fr) minmax(460px, 1.25fr);
+  column-gap: clamp(24px, 3.5vw, 60px);
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
+  width: 100%;
+}
+
+.diorama-narrative {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
+  transform: translateZ(0px);
+}
+
+.diorama-narrative .gate-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 42rem;
+}
+
+.diorama-narrative .gate-stats {
+  margin-top: clamp(18px, 2.5vh, 32px);
+  padding-top: 14px;
+}
+
+/* ---------- Abanico de Tarjetas Sobrepuestas (Stacked 3D Cards) ---------- */
+.diorama-stack {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  height: auto;
+  min-height: 420px;
+  transform-style: preserve-3d;
+  z-index: 4;
+  will-change: transform;
+  transform: translate3d(calc(var(--dist, 0) * -85px), 0, 75px);
+  transition: gap 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.diorama-stack:hover {
+  gap: 12px;
+}
+
+.diorama-stack__glow {
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(
+    circle at 65% 50%,
+    color-mix(in srgb, var(--ch-accent, #c9a24a) 16%, transparent),
+    transparent 70%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.7;
+}
+
+.card-stack-item {
+  position: relative;
+  flex: 0 0 clamp(260px, 22vw, 340px);
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.2s, box-shadow 0.45s;
+  will-change: transform;
+}
+
+/* Efecto de solapamiento en abanico diagonal / imagen sobrepuesta */
+.card-stack-item--1 {
+  z-index: 3;
+  transform: translate3d(0, 0, 30px) rotateY(-4deg);
+}
+
+.card-stack-item--2 {
+  z-index: 5;
+  margin-left: clamp(-75px, -5.5vw, -50px);
+  transform: translate3d(0, 26px, 90px) rotateZ(1.8deg) rotateY(-7deg);
+}
+
+.card-stack-item--3 {
+  z-index: 7;
+  margin-left: clamp(-75px, -5.5vw, -50px);
+  transform: translate3d(0, 52px, 150px) rotateZ(3.2deg) rotateY(-10deg);
+}
+
+/* Al pasar el ratón por el abanico, se separan suavemente para facilitar la inspección */
+.diorama-stack:hover .card-stack-item--2 {
+  margin-left: clamp(-45px, -3.2vw, -25px);
+}
+
+.diorama-stack:hover .card-stack-item--3 {
+  margin-left: clamp(-45px, -3.2vw, -25px);
+}
+
+/* Elevación 3D extrema al pasar el ratón (hover) */
+.card-stack-item:hover,
+.card-stack-item:focus-within {
+  z-index: 30 !important;
+  transform: translate3d(0, -16px, 240px) rotateZ(0deg) rotateY(0deg) scale(1.08) !important;
+}
+
+.card-stack-item:hover .card {
+  border-color: var(--ch-accent, var(--gold, #ffd978));
+  box-shadow:
+    0 40px 95px -12px rgba(0, 0, 0, 0.96),
+    0 0 50px color-mix(in srgb, var(--ch-accent, #c9a24a) 45%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.card-stack-item .card {
+  width: 100%;
+  box-sizing: border-box;
+  transform:
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg));
+  transition: transform 0.15s ease-out, border-color 0.35s ease, box-shadow 0.35s ease;
+  position: relative;
+}
+
+/* Reflejo especular holográfico móvil sobre el cristal */
+.card-stack-item .card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.03) 35%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+}
+
+/* ---------- Escenas de Banco de Trabajo (Workbench) ---------- */
+.scene--workbench {
+  transform-style: preserve-3d;
+}
+
+.scene--workbench .gate-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(24px, 3.5vw, 48px);
+  align-items: start;
+  position: relative;
+  z-index: 2;
+  transform-style: preserve-3d;
+  transform: translateZ(20px);
+}
+
+@media (max-width: 1024px) {
+  .diorama-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .diorama-stack {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    scrollbar-width: none;
+  }
+
+  .diorama-stack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card-stack-item {
+    flex: 0 0 280px;
+  }
+
+  .card-stack-item--2,
+  .card-stack-item--3 {
+    margin-left: -35px;
+  }
 }
 
 /* ---------- Hero cinematográfico ---------- */
 .hero {
-  min-height: 100vh;
   display: grid;
   place-items: center;
   text-align: center;
-  padding: var(--space-8) var(--gutter);
   position: relative;
 }
 
@@ -37,7 +351,7 @@
 
 .hero__scroll-cue {
   position: absolute;
-  bottom: var(--space-8);
+  bottom: 3.5rem;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
@@ -52,22 +366,18 @@
 
 .hero__scroll-cue::after {
   content: '';
-  width: 1px;
-  height: 3rem;
-  background: linear-gradient(180deg, var(--color-paper-faint), transparent);
+  width: 3rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-paper-faint), transparent);
 }
 
 /* ---------- Escena / capítulo ---------- */
 .scene {
   position: relative;
-  min-height: 100svh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(54px, 9vh, 120px) var(--gutter) clamp(46px, 8vh, 100px);
-  max-width: 1360px;
   margin: 0 auto;
-  width: 100%;
 }
 
 /* Scrim atmosférico radial para dar legibilidad impecable sobre WebGL */

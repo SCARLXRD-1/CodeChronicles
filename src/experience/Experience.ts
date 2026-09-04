@@ -14,10 +14,20 @@ import { ScrollStreaks } from './atmosphere/ScrollStreaks';
 import { PortalDirector } from './transitions/PortalDirector';
 
 import { VignetteFX } from './effects/VignetteFX';
+import { BloomFX } from './effects/BloomFX';
+import { ChromaticAberrationFX } from './effects/ChromaticAberrationFX';
+import { ShockwaveFX } from './effects/ShockwaveFX';
+import { DepthOfFieldFX } from './effects/DepthOfFieldFX';
+import { EraNebula } from './atmosphere/EraNebula';
+import { StarfieldParallax } from './atmosphere/StarfieldParallax';
+import { LensFlareFX } from './effects/LensFlareFX';
+import { CRTOverlay } from '../cinema/CRTOverlay';
+
 import type { Era } from '../data/types';
 import { chapters, type ChapterMeta } from '../data/chapters';
 import { getEraCamera, type EraCameraDef } from '../chapters/ChapterCameras';
 import { damp } from '../lib/math';
+
 
 export interface ExperienceCallbacks {
   /** Se llama cuando cambia el capítulo activo. */
@@ -46,6 +56,16 @@ export class Experience {
   private portal!: PortalDirector;
   private vignette!: VignetteFX;
 
+  // Nuevas mejoras cinemáticas
+  private bloomFx!: BloomFX;
+  private chromaticFx!: ChromaticAberrationFX;
+  private shockwaveFx!: ShockwaveFX;
+  private dofFx!: DepthOfFieldFX;
+  private nebula!: EraNebula;
+  private starfield!: StarfieldParallax;
+  private lensFlare!: LensFlareFX;
+  private crtOverlay!: CRTOverlay;
+
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
 
@@ -69,6 +89,11 @@ export class Experience {
     const mobile =
       window.innerWidth < 768 ||
       /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+    // Fondo cósmico multi-capa: Nebulosa y campo de estrellas con parallax profundo
+    this.nebula = new EraNebula(this.scene, mobile);
+    this.starfield = new StarfieldParallax(this.scene, mobile);
+
     this.particles = new ParticleField(mobile ? 180 : 550, {
       color: 0x9aa0a6,
       size: mobile ? 0.055 : 0.045,
@@ -84,8 +109,29 @@ export class Experience {
     this.streaks = new ScrollStreaks(this.scene, mobile ? 160 : 480);
     this.portal = new PortalDirector(this.scene);
     this.vignette = new VignetteFX();
+    this.lensFlare = new LensFlareFX(this.scene);
+    this.crtOverlay = new CRTOverlay();
+
+    // Pipeline de post-procesamiento cinemático
+    this.dofFx = new DepthOfFieldFX(this.scene, this.camera);
+    this.renderer.addPass(this.dofFx.pass);
+
+    this.bloomFx = new BloomFX({
+      baseStrength: mobile ? 0.18 : 0.28,
+      maxStrength: mobile ? 0.42 : 0.65,
+      radius: 0.42,
+      threshold: 0.48,
+    });
+    this.renderer.addPass(this.bloomFx.pass);
+
+    this.chromaticFx = new ChromaticAberrationFX();
+    this.renderer.addPass(this.chromaticFx.pass);
+
+    this.shockwaveFx = new ShockwaveFX();
+    this.renderer.addPass(this.shockwaveFx.pass);
 
     this.rig = new CameraRig(this.camera);
+
 
     // Cámara inicial por defecto
     this.keys = this.buildDefaultKeys();
@@ -114,6 +160,7 @@ export class Experience {
 
   private pendingChapter: ChapterMeta | null = null;
   private activeChapterId: string | null = null;
+  private horizontalVelocity = 0;
 
   // C3 · cámara amortiguada + parallax sutil de ratón
   private smooth = 0;
@@ -144,6 +191,11 @@ export class Experience {
     this.glyphs.setAccent(chapter.color);
     this.streaks.setAccent(chapter.color);
     this.portal.setAccent(chapter.color);
+    this.nebula.setAccent(chapter.color);
+    this.starfield.setAccent(chapter.color);
+    this.lensFlare.setAccent(chapter.color);
+    this.shockwaveFx.trigger(chapter.color);
+    this.crtOverlay.setChapter(chapter);
     this.applyChapterTheme(chapter);
     this.callbacks.onChapterChange?.(chapter);
   }
@@ -190,7 +242,7 @@ export class Experience {
       this.rig.applyTo(this.smooth);
       this.handleParallax(dt);
       const drift = this.mouseSm;
-      this.camera.position.x += drift.x * 0.14;
+      this.camera.position.x += drift.x * 0.14 + (snap.progress - 0.5) * 2.2;
       this.camera.position.y += drift.y * 0.1;
 
       // Velocidad de scroll para los efectos de viaje temporal cinemático
@@ -198,7 +250,8 @@ export class Experience {
       lastScrollY = snap.scrollY;
       const scrollVelocity = scrollDelta / Math.max(1, window.innerHeight);
       rawSpeed = scrollVelocity / Math.max(0.001, dt);
-      const instantSpeed = Math.min(1.2, rawSpeed * 0.32);
+      const ribbonSpeed = Math.min(2.0, this.horizontalVelocity * 0.045);
+      const instantSpeed = Math.max(Math.min(1.2, rawSpeed * 0.32), ribbonSpeed);
       if (instantSpeed > speedVal) {
         speedVal = THREE.MathUtils.lerp(speedVal, instantSpeed, 0.45);
       } else {
@@ -228,21 +281,43 @@ export class Experience {
       }
 
       // Escena y efectos del Núcleo de la Máquina del Tiempo
+      this.nebula.update(t, snap.progress, speedVal);
+      this.starfield.update(t, snap.progress, this.mouseSm, speedVal);
       this.scene3d.update(t, this.smooth / this.scroll.getSections());
       this.portal.update(snap);
       this.particles.update(t, this.camera.position);
       this.fog.update(t, snap.progress);
       this.tint.update(this.warpSmooth * 0.6 + snap.progress * 0.5, speedVal);
       this.glow.update(t);
+      this.lensFlare.update(this.camera, this.glow.group.position);
       this.chronoCore.update(t, dt, snap.progress, speedVal, this.warpSmooth);
       this.tunnel.update(snap.progress, speedVal, this.warpSmooth);
       this.glyphs.update(t, dt, snap.progress, speedVal, this.warpSmooth);
       this.streaks.update(speedVal);
       this.vignette.update(t, snap.progress);
+
+      // Pases de post-procesamiento cinemático
+      this.dofFx.update(speedVal);
+      this.bloomFx.update(speedVal);
+      this.chromaticFx.update(speedVal, this.warpSmooth);
+      this.shockwaveFx.update(dt);
     });
   }
 
+  public setRibbonProgress(progress: number, rawPixels = 0, velocity = 0) {
+    this.scroll.setProgress(progress, rawPixels);
+    this.horizontalVelocity = velocity;
+  }
+
   dispose() {
+    this.nebula.dispose();
+    this.starfield.dispose();
+    this.lensFlare.dispose();
+    this.crtOverlay.dispose();
+    this.dofFx.dispose();
+    this.bloomFx.dispose();
+    this.chromaticFx.dispose();
+    this.shockwaveFx.dispose();
     this.scene3d.dispose();
     this.particles.dispose();
     this.fog.dispose();

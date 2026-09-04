@@ -10,6 +10,7 @@ import type { CharacterEntry } from '../data/types';
 import { influenceTreeSVG } from '../history/InfluenceSVG';
 import { interactiveTimelineMarkup, bindInteractiveTimeline } from '../history/InteractiveTimeline';
 import { comparisonMarkup, bindComparison } from '../interactions/LanguageComparison';
+import { tr } from '../i18n';
 
 function layoutClass(m: Moment): string {
   switch (m.layout) {
@@ -37,18 +38,18 @@ function dataCard(m: Moment): string {
     return `
       <aside class="scene__aside card" data-card="${m.id}" data-rv="up">
         ${arIcon}
-        <p class="eyebrow eyebrow--accent">Máquina</p>
+        <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.machine'))}</p>
         <h3 class="display display--md">${esc(machine.name)}</h3>
         <p class="meta">${esc(machine.creator)} · ${machine.year}</p>
         <p class="body-text">${esc(machine.description)}</p>
-        <div class="card-meta"><span>Máquina histórica</span><span>${machine.year}</span></div>
+        <div class="card-meta"><span>${esc(tr('ui.machine_hist'))}</span><span>${machine.year}</span></div>
       </aside>`;
   }
   if (artifact) {
     return `
       <aside class="scene__aside card" data-card="${m.id}" data-rv="up">
         ${arIcon}
-        <p class="eyebrow eyebrow--accent">Artefacto</p>
+        <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.artifact'))}</p>
         <h3 class="display display--md">${esc(artifact.name)}</h3>
         <p class="meta">${artifact.year ? `${artifact.year} · ` : ''}${esc(artifact.type)}</p>
         <p class="body-text">${esc(artifact.context)}</p>
@@ -59,11 +60,11 @@ function dataCard(m: Moment): string {
     return `
       <aside class="scene__aside card" data-card="${m.id}" data-rv="up">
         ${arIcon}
-        <p class="eyebrow eyebrow--accent">Acontecimiento</p>
+        <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.event'))}</p>
         <h3 class="display display--md">${esc(event.title)}</h3>
         <p class="meta">${event.year ?? ''}</p>
         <p class="body-text">${esc(event.description)}</p>
-        <div class="card-meta"><span>Hito temporal</span><span>${event.year ?? '—'}</span></div>
+        <div class="card-meta"><span>${esc(tr('ui.milestone_temp'))}</span><span>${event.year ?? '—'}</span></div>
       </aside>`;
   }
   return '';
@@ -75,7 +76,7 @@ function characterCard(char: CharacterEntry, m: Moment): string {
     <aside class="scene__aside card scene__character" data-card="${m.id}" data-rv="up">
       ${arIcon}
       <div class="character__eyebrow">
-        <p class="eyebrow eyebrow--accent">Figura histórica</p>
+        <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.character'))}</p>
         <p class="meta">${esc(char.representation)}</p>
       </div>
       <h3 class="display display--md character__name">${esc(char.name)}</h3>
@@ -83,7 +84,7 @@ function characterCard(char: CharacterEntry, m: Moment): string {
       <span class="rule rule--short" aria-hidden="true"></span>
       <p class="character__tags meta">${esc(char.profession)}</p>
       ${char.quote ? `<blockquote class="scene__quote character__quote"><p>“${esc(char.quote)}”</p></blockquote>` : ''}
-      <div class="card-meta"><span>${esc(char.profession.split('·')[0].trim())}</span><span>${esc(char.years)}</span></div>
+      <div class="card-meta"><span>${esc(tr('ui.figure_hist'))}</span><span>${esc(char.years)}</span></div>
     </aside>`;
 }
 
@@ -101,7 +102,7 @@ function resolveCode(m: Moment): { code: string; file: string; note: string } {
   const fallback = {
     code: bernoulliSketch(),
     file: 'algoritmo · 1843',
-    note: 'Reconstrucción esquemática — interpretación histórica',
+    note: tr('ui.reconstruction.note'),
   };
   if (!m.dataRef) return fallback;
 
@@ -137,7 +138,7 @@ function codeMoment(m: Moment): string {
   const code = resolved.code;
   const explore =
     m.dataRef && m.type === 'code'
-      ? `<a class="discover-link" href="#" data-discover="${esc(m.dataRef)}" data-rv><span class="plus">+</span>¿Qué significa?</a>`
+      ? `<a class="discover-link" href="#" data-discover="${esc(m.dataRef)}" data-rv><span class="plus">+</span>${esc(tr('ui.what_means'))}</a>`
       : '';
   return `
     <div class="scene__content" data-reveal>
@@ -148,7 +149,7 @@ function codeMoment(m: Moment): string {
         <div class="tcode__bar">
           <span class="tcode__dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="tcode__file">${esc(resolved.file)}</span>
-          <button class="tcode__copy" data-copy type="button" aria-label="Copiar el código">Copiar</button>
+          <button class="tcode__copy" data-copy type="button" aria-label="${esc(tr('ui.copy_code_aria'))}">${esc(tr('ui.copy'))}</button>
         </div>
         <pre class="tcode__body" aria-label="${esc(resolved.file)}">${code}<span class="tcode__caret" aria-hidden="true"></span></pre>
       </div>
@@ -181,7 +182,7 @@ function transitionMoment(m: Moment): string {
       <h3 class="display display--md" data-rv>${esc(m.title ?? '')}</h3>
       <p class="body-text" data-rv>${esc(m.body ?? '')}</p>
       <span class="rule rule--short" aria-hidden="true"></span>
-      <p class="meta" data-rv>Desplázate →</p>
+      <p class="meta" data-rv>${esc(tr('ui.scroll_cue'))}</p>
     </div>`;
 }
 
@@ -193,7 +194,7 @@ function defaultMoment(m: Moment, extraHTML: string = ''): string {
       ${m.subtitle ? `<p class="lede" data-rv>${esc(m.subtitle)}</p>` : ''}
       ${m.body ? `<p class="body-text" data-rv>${esc(m.body)}</p>` : ''}
       ${dataCard(m)}
-      ${m.dataRef ? `<a class="discover-link" href="#" data-discover="${esc(m.dataRef)}" data-rv><span class="plus">+</span>Explorar</a>` : ''}
+      ${m.dataRef ? `<a class="discover-link" href="#" data-discover="${esc(m.dataRef)}" data-rv><span class="plus">+</span>${esc(tr('ui.explore'))}</a>` : ''}
       ${extraHTML}
     </div>`;
   return inner;

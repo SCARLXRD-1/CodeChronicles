@@ -1,5 +1,6 @@
 import { timeline } from '../data/timeline';
 import { esc } from '../content/ChroniclesContent';
+import { tr } from '../i18n';
 
 /**
  * Interactive Timeline — FASE 5
@@ -20,7 +21,7 @@ function distinctYears(): number[] {
 
 export function interactiveTimelineMarkup(): string {
   const years = distinctYears();
-  if (years.length === 0) return '<p class="body-text">No hay datos.</p>';
+  if (years.length === 0) return `<p class="body-text">${esc(tr('ui.timeline.nodata'))}</p>`;
   const min = years[0];
   const max = years[years.length - 1];
   const span = Math.max(1, max - min);
@@ -28,8 +29,9 @@ export function interactiveTimelineMarkup(): string {
   const stops = years
     .map((y) => {
       const left = ((y - min) / span) * 100;
+      const aria = tr('ui.timeline.year_aria').replace('{y}', String(y));
       return `
-      <button class="timeline-panel__rst" data-year="${y}" style="left:${left}%" aria-label="Año ${y}" title="${y}"></button>`;
+      <button class="timeline-panel__rst" data-year="${y}" style="left:${left}%" aria-label="${esc(aria)}" title="${y}"></button>`;
     })
     .join('\n');
 
@@ -39,14 +41,14 @@ export function interactiveTimelineMarkup(): string {
 
   return `
     <div class="timeline-panel" data-timeline>
-      <p class="eyebrow">Línea de tiempo</p>
-      <div class="timeline-panel__scale" role="radiogroup" aria-label="Línea temporal">
+      <p class="eyebrow">${esc(tr('ui.timeline.title'))}</p>
+      <div class="timeline-panel__scale" role="radiogroup" aria-label="${esc(tr('ui.timeline.scale_aria'))}">
         <div class="timeline-panel__track"></div>
         ${stops}
         <div class="timeline-panel__ticks">${scaleTicks}</div>
       </div>
       <div class="timeline-panel__events" aria-live="polite">
-        <p class="meta">Selecciona un año para explorar</p>
+        <p class="meta">${esc(tr('ui.timeline.prompt'))}</p>
       </div>
     </div>`;
 }
@@ -54,15 +56,19 @@ export function interactiveTimelineMarkup(): string {
 export function timelineYearEvents(year: number): string {
   const matches = timeline.filter((e) => Number(e.year) === year);
   if (matches.length === 0)
-    return '<p class="body-text">Sin acontecimientos para este año.</p>';
+    return `<p class="body-text">${esc(tr('ui.timeline.empty'))}</p>`;
   return matches
     .map(
-      (e) => `
+      (e) => {
+        const title = tr(`card.event.${e.id}.title`, e.title);
+        const desc = tr(`card.event.${e.id}.desc`, e.description);
+        return `
       <div class="timeline-event">
-        <p class="timeline-event__title">${esc(e.title)}</p>
-        <p class="timeline-event__body">${esc(e.description)}</p>
+        <p class="timeline-event__title">${esc(title)}</p>
+        <p class="timeline-event__body">${esc(desc)}</p>
         ${e.related.map((r) => `<span class="tag">${esc(r)}</span>`).join(' ')}
-      </div>`,
+      </div>`;
+      },
     )
     .join('\n');
 }
