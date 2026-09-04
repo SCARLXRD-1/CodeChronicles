@@ -119,7 +119,7 @@ function chapterMarkup(ch: ChapterMeta): string {
         <p class="meta">${esc(prof)} · ${esc(char.years)}</p>
         ${quote ? `<blockquote class="scene__quote"><p>“${esc(quote)}”</p></blockquote>` : ''}
         <div class="card-meta">
-          <span>${esc(char.representation)}</span>
+          <span>${esc(tr('ui.representation.' + char.representation, char.representation))}</span>
           <span class="card-read-cue">${tr('ui.explore')} ↗</span>
         </div>
       </article>`);
@@ -127,6 +127,9 @@ function chapterMarkup(ch: ChapterMeta): string {
 
   if (lang) {
     const context = tr(`card.lang.${lang.id}.context`, lang.historicalContext);
+    const localizedParadigms = lang.paradigms
+      .map((p) => tr('paradigm.' + p.toLowerCase().replace(/[^a-z0-9]/g, '_'), p))
+      .join(' · ');
     cardsHTML.push(`
       <article class="card card--interactive" data-rv="up" data-discover="${lang.id}" role="button" tabindex="0" aria-label="${esc(lang.name)}">
         ${arSvg}
@@ -135,7 +138,7 @@ function chapterMarkup(ch: ChapterMeta): string {
         <p class="meta">${esc(lang.creators.join(', '))} · ${lang.year}</p>
         <p class="body-text">${esc(context)}</p>
         <div class="card-meta">
-          <span>${esc(lang.paradigms.join(' · '))}</span>
+          <span>${esc(localizedParadigms)}</span>
           <span class="card-read-cue">${tr('ui.explore')} ↗</span>
         </div>
       </article>`);

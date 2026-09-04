@@ -1,4 +1,5 @@
 import { chapters, type ChapterMeta, getChapter } from '../data/chapters';
+import { tr } from '../i18n';
 
 export interface TimelineRibbonOptions {
   container: HTMLElement;
@@ -10,6 +11,8 @@ export class TimelineRibbon {
   private container: HTMLElement;
   private track: HTMLElement | null = null;
   private cursor: HTMLElement | null = null;
+  private prevBtn: HTMLElement | null = null;
+  private nextBtn: HTMLElement | null = null;
 
   private currentX = 0;
   private targetX = 0;
@@ -19,6 +22,7 @@ export class TimelineRibbon {
 
   private rafId = 0;
   private isTouching = false;
+  private touchThresholdMet = false;
   private touchStartX = 0;
   private touchStartY = 0;
   private touchLastX = 0;
@@ -56,9 +60,46 @@ export class TimelineRibbon {
     this.track = this.container.querySelector<HTMLElement>('#timeline-ribbon-track');
     this.cursor = this.container.querySelector<HTMLElement>('#timeline-ribbon-cursor');
 
+    // Botones de navegación cinemática lateral (Prev / Next)
+    this.setupNavButtons();
+
     this.measure();
     this.attachEvents();
     this.rafId = requestAnimationFrame(this.tick);
+  }
+
+  private setupNavButtons() {
+    let prev = document.querySelector<HTMLElement>('#ribbon-btn-prev');
+    let next = document.querySelector<HTMLElement>('#ribbon-btn-next');
+
+    if (!prev) {
+      prev = document.createElement('button');
+      prev.id = 'ribbon-btn-prev';
+      prev.className = 'ribbon-nav-btn ribbon-nav-btn--prev';
+      prev.setAttribute('aria-label', tr('ui.prev', 'Anterior'));
+      prev.innerHTML = '<span aria-hidden="true">‹</span>';
+      document.body.appendChild(prev);
+      prev.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.prevStation();
+      });
+    }
+
+    if (!next) {
+      next = document.createElement('button');
+      next.id = 'ribbon-btn-next';
+      next.className = 'ribbon-nav-btn ribbon-nav-btn--next';
+      next.setAttribute('aria-label', tr('ui.next', 'Siguiente'));
+      next.innerHTML = '<span aria-hidden="true">›</span>';
+      document.body.appendChild(next);
+      next.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.nextStation();
+      });
+    }
+
+    this.prevBtn = prev;
+    this.nextBtn = next;
   }
 
   public measure() {
@@ -169,6 +210,7 @@ export class TimelineRibbon {
   private onTouchStart(e: TouchEvent) {
     if (e.touches.length !== 1) return;
     this.isTouching = true;
+    this.touchThresholdMet = false;
     this.touchStartX = e.touches[0].clientX;
     this.touchStartY = e.touches[0].clientY;
     this.touchLastX = this.touchStartX;
@@ -183,9 +225,27 @@ export class TimelineRibbon {
     const totalDeltaY = Math.abs(currentY - this.touchStartY);
     const totalDeltaX = Math.abs(currentX - this.touchStartX);
 
-    if (totalDeltaX > totalDeltaY) {
+    // Si el usuario arrastra dentro de un contenedor táctil interno scrollable
+    const targetEl = e.target as HTMLElement | null;
+    const scrollableEl = targetEl?.closest<HTMLElement>('.diorama-stack, .discovery__panel');
+    if (scrollableEl && scrollableEl.scrollWidth > scrollableEl.clientWidth) {
+      if (totalDeltaX > 8 && scrollableEl.contains(targetEl)) {
+        return;
+      }
+    }
+
+    // Umbral de inicio de arrastre horizontal (touch slop)
+    if (!this.touchThresholdMet) {
+      if (totalDeltaX > 7 && totalDeltaX > totalDeltaY) {
+        this.touchThresholdMet = true;
+      } else if (totalDeltaY > 10) {
+        return;
+      }
+    }
+
+    if (this.touchThresholdMet) {
       e.preventDefault();
-      this.targetX = Math.max(0, Math.min(this.maxScrollX, this.targetX + deltaX * 1.3));
+      this.targetX = Math.max(0, Math.min(this.maxScrollX, this.targetX + deltaX * 1.25));
       this.touchVelocity = deltaX;
       this.touchLastX = currentX;
     }
@@ -193,15 +253,43 @@ export class TimelineRibbon {
 
   private onTouchEnd() {
     this.isTouching = false;
-    // Inercia táctil suave
-    this.targetX = Math.max(
-      0,
-      Math.min(this.maxScrollX, this.targetX + this.touchVelocity * 8),
-    );
+    if (this.touchThresholdMet) {
+      // Inercia cinemática con amortiguación natural
+      this.targetX = Math.max(
+        0,
+        Math.min(this.maxScrollX, this.targetX + this.touchVelocity * 6.5),
+      );
+    }
   }
 
   private onResize() {
     this.measure();
+  }
+
+  public nextStation() {
+    if (this.stations.length === 0) return;
+    const currentIndex = this.stations.findIndex(
+      (s) => s.id === this.activeChapterId || s.element.id === this.activeChapterId,
+    );
+    if (currentIndex >= 0 && currentIndex < this.stations.length - 1) {
+      this.scrollToSection(this.stations[currentIndex + 1].id);
+    } else {
+      const step = window.innerWidth * 0.85;
+      this.targetX = Math.min(this.maxScrollX, this.targetX + step);
+    }
+  }
+
+  public prevStation() {
+    if (this.stations.length === 0) return;
+    const currentIndex = this.stations.findIndex(
+      (s) => s.id === this.activeChapterId || s.element.id === this.activeChapterId,
+    );
+    if (currentIndex > 0) {
+      this.scrollToSection(this.stations[currentIndex - 1].id);
+    } else {
+      const step = window.innerWidth * 0.85;
+      this.targetX = Math.max(0, this.targetX - step);
+    }
   }
 
   public scrollToSection(id: string): boolean {
@@ -290,6 +378,15 @@ export class TimelineRibbon {
       station.element.style.setProperty('--abs-dist', absDist.toFixed(4));
       station.element.style.setProperty('--dir', String(sign));
 
+      // Aislamiento óptico radical para erradicar sangrado fantasma
+      if (absDist > 0.8) {
+        station.element.style.visibility = 'hidden';
+        station.element.style.pointerEvents = 'none';
+      } else {
+        station.element.style.visibility = 'visible';
+        station.element.style.pointerEvents = absDist < 0.55 ? 'auto' : 'none';
+      }
+
       // Marca visual activa/inactiva en la cinta
       const isActive = absDist < 0.55;
       station.element.classList.toggle('is-ribbon-active', isActive);
@@ -312,6 +409,17 @@ export class TimelineRibbon {
         this.onActiveChapterCb?.(bestStation.chapter);
       }
     }
+
+    // Actualizar botones de navegación lateral
+    if (this.prevBtn) {
+      this.prevBtn.style.opacity = this.currentX <= 10 ? '0.25' : '1';
+      this.prevBtn.style.pointerEvents = this.currentX <= 10 ? 'none' : 'auto';
+    }
+    if (this.nextBtn) {
+      const isEnd = this.currentX >= this.maxScrollX - 10;
+      this.nextBtn.style.opacity = isEnd ? '0.25' : '1';
+      this.nextBtn.style.pointerEvents = isEnd ? 'none' : 'auto';
+    }
   }
 
   public destroy() {
@@ -322,5 +430,7 @@ export class TimelineRibbon {
     window.removeEventListener('touchmove', this.onTouchMove);
     window.removeEventListener('touchend', this.onTouchEnd);
     window.removeEventListener('resize', this.onResize);
+    this.prevBtn?.remove();
+    this.nextBtn?.remove();
   }
 }

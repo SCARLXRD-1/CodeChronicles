@@ -82,10 +82,12 @@
 .timeline-ribbon-track > .hero,
 .timeline-ribbon-track > .scene,
 .timeline-ribbon-track > .epilogue {
-  height: 100vh;
-  max-height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  max-height: 100dvh;
   width: clamp(84vw, 92vw, 1580px);
   max-width: 1580px;
+  margin-right: clamp(2vw, 4.5vw, 90px);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -101,8 +103,8 @@
     rotateY(calc(var(--dist, 0) * -26deg))
     rotateZ(calc(var(--dist, 0) * -1.6deg))
     scale(calc(1 - var(--abs-dist, 0) * 0.1));
-  opacity: calc(1 - var(--abs-dist, 0) * 0.45);
-  transition: opacity 0.35s ease;
+  opacity: calc(clamp(0, 1 - var(--abs-dist, 0) * 1.35, 1));
+  transition: opacity 0.3s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -328,6 +330,92 @@
   .card-stack-item--2,
   .card-stack-item--3 {
     margin-left: -35px;
+  }
+}
+
+@media (max-width: 860px) {
+  .timeline-ribbon-track > .hero,
+  .timeline-ribbon-track > .scene,
+  .timeline-ribbon-track > .epilogue {
+    width: 94vw;
+    margin-right: 3vw;
+    padding: 4.5rem 1.25rem 2.8rem;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .diorama-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    width: 100%;
+  }
+
+  .diorama-narrative .display--lg {
+    font-size: clamp(1.4rem, 5.5vw, 2.2rem);
+    line-height: 1.15;
+  }
+
+  .diorama-narrative .lead {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .diorama-narrative .gate-copy .body-text {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .gate-stats {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-top: 14px !important;
+    padding-top: 12px !important;
+  }
+
+  .gate-stats > div b {
+    font-size: 1.2rem;
+  }
+
+  .gate-stats > div span {
+    font-size: 0.65rem;
+  }
+
+  /* Carrusel horizontal táctil para las 3 mini-cards en móviles */
+  .diorama-stack {
+    min-height: auto;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 14px;
+    padding: 8px 4px 20px;
+    -webkit-overflow-scrolling: touch;
+    transform: none !important;
+    width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201, 162, 74, 0.3) transparent;
+  }
+
+  .card-stack-item {
+    flex: 0 0 clamp(240px, 76vw, 310px);
+    scroll-snap-align: center;
+    margin-left: 0 !important;
+    transform: none !important;
+  }
+
+  .card-stack-item:hover,
+  .card-stack-item:focus-within {
+    transform: translateY(-4px) !important;
+  }
+
+  .card-stack-item .card {
+    min-height: 240px;
   }
 }
 

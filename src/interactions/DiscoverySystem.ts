@@ -4,7 +4,6 @@ import { getLanguage } from '../data/languages';
 import { getMachine } from '../data/machines';
 import { getArtifact } from '../data/artifacts';
 import { getEvent } from '../data/events';
-import { sourceRegistry } from '../data/sources';
 import { esc } from '../content/ChroniclesContent';
 import { tr } from '../i18n';
 
@@ -86,67 +85,71 @@ export class DiscoverySystem {
   }
 
   private resolve(refId: string): { content: string; sourcesHtml: string; kind: DiscoverKind } | null {
-    const registryEntry = sourceRegistry.find((r) => r.id === refId);
-    if (registryEntry) {
-      if (registryEntry.kind === 'character') {
-        const c = getCharacter(refId)!;
-        const prof = tr(`card.char.${c.id}.profession`) || c.profession;
-        const quote = tr(`card.char.${c.id}.quote`) || c.quote;
-        return {
-          kind: 'character',
-          content: `
-            <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.character'))} · ${esc(c.representation)}</p>
-            <h2 class="display display--lg discovery__title">${esc(c.name)}</h2>
-            <p class="discovery__meta">${esc(c.years)} · ${esc(prof)}</p>
-            <span class="rule rule--short" aria-hidden="true"></span>
-            <p class="lede">${esc(c.contribution)}</p>
-            <p class="discovery__body">${esc(c.description)}</p>
-            ${quote ? `<blockquote class="scene__quote">“${esc(quote)}”</blockquote>` : ''}
-            <div class="tags">${c.related.map((r) => `<span class="tag">${esc(r)}</span>`).join('')}</div>`,
-          sourcesHtml: this.sourcesHtml(refId),
-        };
-      }
-      if (registryEntry.kind === 'language') {
-        const l = getLanguage(refId)!;
-        const problem = tr(`card.lang.${l.id}.context`) || l.problemSolved;
-        return {
-          kind: 'language',
-          content: `
-            <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.language'))} · ${l.year}</p>
-            <h2 class="display display--lg discovery__title">${esc(l.name)}</h2>
-            <p class="discovery__meta">${esc(l.creators.join(', '))}</p>
-            <span class="rule rule--short" aria-hidden="true"></span>
-            <p class="lede">${esc(problem)}</p>
-            <p class="discovery__body">${esc(l.historicalContext)}</p>
-            <div class="tags">
-              ${l.paradigms.map((p) => `<span class="tag">${esc(p)}</span>`).join('')}
-            </div>
-            ${l.influences.length ? `<div class="tags"><p class="sources__label">${esc(tr('ui.influences'))}</p>${l.influences.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}
-            ${l.influenced.length ? `<div class="tags"><p class="sources__label">${esc(tr('ui.influenced'))}</p>${l.influenced.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}`,
-          sourcesHtml: this.sourcesHtml(refId),
-        };
-      }
-      if (registryEntry.kind === 'machine') {
-        const m = getMachine(refId)!;
-        const desc = tr(`card.machine.${m.id}.desc`) || m.description;
-        return {
-          kind: 'machine',
-          content: `
-            <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.machine'))} · ${m.year}</p>
-            <h2 class="display display--lg discovery__title">${esc(m.name)}</h2>
-            <p class="discovery__meta">${esc(m.creator)} · ${esc(m.type)}</p>
-            <span class="rule rule--short" aria-hidden="true"></span>
-            <p class="discovery__body">${esc(desc)}</p>
-            <ul class="discovery__body">
-              ${m.technicalNotes.map((n) => `<li>${esc(n)}</li>`).join('')}
-            </ul>`,
-          sourcesHtml: this.sourcesHtml(refId),
-        };
-      }
-      return null;
+    // 1. Personajes históricos
+    const c = getCharacter(refId);
+    if (c) {
+      const prof = tr(`card.char.${c.id}.profession`) || c.profession;
+      const quote = tr(`card.char.${c.id}.quote`) || c.quote;
+      const desc = tr(`card.char.${c.id}.desc`) || c.description;
+      const rep = tr(`ui.representation.${c.representation}`) || c.representation;
+      return {
+        kind: 'character',
+        content: `
+          <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.character'))} · ${esc(rep)}</p>
+          <h2 class="display display--lg discovery__title">${esc(c.name)}</h2>
+          <p class="discovery__meta">${esc(c.years)} · ${esc(prof)}</p>
+          <span class="rule rule--short" aria-hidden="true"></span>
+          <p class="lede">${esc(c.contribution)}</p>
+          <p class="discovery__body">${esc(desc)}</p>
+          ${quote ? `<blockquote class="scene__quote">“${esc(quote)}”</blockquote>` : ''}
+          <div class="tags">${c.related.map((r) => `<span class="tag">${esc(r)}</span>`).join('')}</div>`,
+        sourcesHtml: this.sourcesHtml(refId),
+      };
     }
 
-    // Eventos y artefactos (no indexados por kind, resolvemos directamente)
+    // 2. Lenguajes de programación
+    const l = getLanguage(refId);
+    if (l) {
+      const problem = tr(`card.lang.${l.id}.context`) || l.problemSolved;
+      const context = tr(`card.lang.${l.id}.desc`) || l.historicalContext;
+      return {
+        kind: 'language',
+        content: `
+          <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.language'))} · ${l.year}</p>
+          <h2 class="display display--lg discovery__title">${esc(l.name)}</h2>
+          <p class="discovery__meta">${esc(l.creators.join(', '))}</p>
+          <span class="rule rule--short" aria-hidden="true"></span>
+          <p class="lede">${esc(problem)}</p>
+          <p class="discovery__body">${esc(context)}</p>
+          <div class="tags">
+            ${l.paradigms.map((p) => `<span class="tag">${esc(tr('paradigm.' + p.toLowerCase().replace(/[^a-z0-9]/g, '_'), p))}</span>`).join('')}
+          </div>
+          ${l.influences.length ? `<div class="tags"><p class="sources__label">${esc(tr('ui.influences'))}</p>${l.influences.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}
+          ${l.influenced.length ? `<div class="tags"><p class="sources__label">${esc(tr('ui.influenced'))}</p>${l.influenced.map((i) => `<span class="tag">${esc(i)}</span>`).join('')}</div>` : ''}`,
+        sourcesHtml: this.sourcesHtml(refId),
+      };
+    }
+
+    // 3. Máquinas y hardware
+    const m = getMachine(refId);
+    if (m) {
+      const desc = tr(`card.machine.${m.id}.desc`) || m.description;
+      return {
+        kind: 'machine',
+        content: `
+          <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.machine'))} · ${m.year}</p>
+          <h2 class="display display--lg discovery__title">${esc(m.name)}</h2>
+          <p class="discovery__meta">${esc(m.creator)} · ${esc(m.type)}</p>
+          <span class="rule rule--short" aria-hidden="true"></span>
+          <p class="discovery__body">${esc(desc)}</p>
+          <ul class="discovery__body">
+            ${m.technicalNotes.map((n) => `<li>${esc(n)}</li>`).join('')}
+          </ul>`,
+        sourcesHtml: this.sourcesHtml(refId),
+      };
+    }
+
+    // 4. Hitos y momentos clave (eventos)
     const event = getEvent(refId);
     if (event) {
       const eTitle = tr(`card.event.${event.id}.title`) || event.title;
@@ -156,11 +159,15 @@ export class DiscoverySystem {
         content: `
           <p class="eyebrow eyebrow--accent">${esc(tr('ui.kind.event'))} · ${event.year}</p>
           <h2 class="display display--lg discovery__title">${esc(eTitle)}</h2>
+          <p class="discovery__meta">${esc(event.dateLabel ?? String(event.year))} · ${esc(event.category)}</p>
           <span class="rule rule--short" aria-hidden="true"></span>
-          <p class="discovery__body">${esc(eDesc)}</p>`,
+          <p class="discovery__body">${esc(eDesc)}</p>
+          ${event.related?.length ? `<div class="tags">${event.related.map((r) => `<span class="tag">${esc(r)}</span>`).join('')}</div>` : ''}`,
         sourcesHtml: this.sourcesHtml(refId),
       };
     }
+
+    // 5. Artefactos históricos
     const artifact = getArtifact(refId);
     if (artifact) {
       return {
@@ -173,6 +180,7 @@ export class DiscoverySystem {
         sourcesHtml: this.sourcesHtml(refId),
       };
     }
+
     return null;
   }
 
